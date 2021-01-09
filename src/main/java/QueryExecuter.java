@@ -19,8 +19,8 @@ public class QueryExecuter {
         }
     }
 
-    public ArrayList<GeoPosition> findRoute(ArrayList<GeoPosition> points) throws SQLException {
-        ArrayList<GeoPosition> route = new ArrayList<GeoPosition>();
+    public ArrayList<ArrayList<GeoPosition>> findRoute(ArrayList<GeoPosition> points) throws SQLException {
+        ArrayList<ArrayList<GeoPosition>> route= new ArrayList<>();
 
         double startLat =  points.get(0).getLatitude();
         double starLng =  points.get(0).getLongitude();
@@ -48,10 +48,8 @@ public class QueryExecuter {
                 "JOIN hh_2po_4pgr rd ON waypoints.edge = rd.id ORDER BY path_seq;\n");
 
 
-
         while (rs.next()) {
             String id = rs.getString("id");
-            //System.out.println(id);
             String line = rs.getString("waypoint");
             System.out.println(line);
             line = line.replace("LINESTRING(", "");
@@ -60,25 +58,27 @@ public class QueryExecuter {
 
             String[] waypoints = line.split(",");
 
+            ArrayList<GeoPosition> path = new ArrayList<>();
+
             for (String waypoint : waypoints){
                 String[] coordinates = waypoint.split(" ");
-                //System.out.println(coordinates[1]+" "+coordinates[0]);
-                route.add(new GeoPosition(Double.parseDouble(coordinates[1]) , Double.parseDouble(coordinates[0])));
-            }
+                path.add(new GeoPosition(Double.parseDouble(coordinates[1]) , Double.parseDouble(coordinates[0])));
 
+            }
+            route.add(path);
 
         }
 
         return route;
     }
 
-    public static int getDistanceOfRoute(ArrayList<GeoPosition> points)
+    public int getDistanceOfRoute(ArrayList<ArrayList<GeoPosition>> points)
     {
         //SELECT...
         return 2137;
     }
 
-    public static int getTimeOfRoute(ArrayList<GeoPosition> points)
+    public int getTimeOfRoute(ArrayList<ArrayList<GeoPosition>> points)
     {
         //SELECT...
         return 1297;
