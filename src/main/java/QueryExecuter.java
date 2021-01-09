@@ -6,10 +6,11 @@ import java.util.Arrays;
 
 public class QueryExecuter {
 
-    public static Connection connection;
+    private  Connection connection;
 
-    public static void connect(String url)
+    public  QueryExecuter()
     {
+        String url = "jdbc:postgresql://spdb.ckvqlgxx5bxn.us-east-2.rds.amazonaws.com/SPDB?user=postgres&password=Lofciamspdb1";
         try {
             connection = DriverManager.getConnection(url);
             System.out.println("Connected to the PostgreSQL server successfully.");
@@ -18,10 +19,42 @@ public class QueryExecuter {
         }
     }
 
-    public static ArrayList<GeoPosition> findRoute(ArrayList<GeoPosition> points)
-    {
-        //SELECT...
-        return points;
+    public ArrayList<GeoPosition> findRoute(ArrayList<GeoPosition> points) throws SQLException {
+        ArrayList<GeoPosition> route = new ArrayList<GeoPosition>();
+
+        double startLat =  points.get(0).getLatitude();
+        double starLng =  points.get(0).getLongitude();
+
+        double endLat =  points.get(1).getLatitude();
+        double endLng = points.get(1).getLongitude();
+
+        Statement stmt = connection.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT * FROM pgr_astar(\n" +
+                "    'select * from opolskie_routing',\n" +
+                "    (SELECT source FROM hh_2po_4pgr\n" +
+                "    ORDER BY ST_Distance(\n" +
+                "        ST_StartPoint(geom_way),\n" +
+                "        ST_SetSRID(ST_MakePoint("+starLng+","+startLat+"), 4326),\n" +
+                "        true\n" +
+                "   ) ASC limit 1),\n" +
+                "\t(SELECT source FROM hh_2po_4pgr\n" +
+                "    ORDER BY ST_Distance(\n" +
+                "        ST_StartPoint(geom_way),\n" +
+                "        ST_SetSRID(ST_MakePoint("+endLng+","+endLat+" ), 4326),\n" +
+                "        true\n" +
+                "   ) ASC limit 1),\n" +
+                "\ttrue)\n" +
+                "\t\tas waypoints\n" +
+                "JOIN hh_2po_4pgr rd ON waypoints.edge = rd.id;\n");
+
+
+
+        while (rs.next()) {
+            System.out.println(rs.getDouble("y1") +" "+ rs.getDouble("x1"));
+            route.add(new GeoPosition(rs.getDouble("y1"), rs.getDouble("x1")));
+        }
+
+        return route;
     }
 
     public static int getDistanceOfRoute(ArrayList<GeoPosition> points)
@@ -46,7 +79,7 @@ public class QueryExecuter {
         return categories;
     }
 
-    public static ArrayList<ArrayList<GeoPosition>> findPOIs(int POInumber, ArrayList<GeoPosition> points, int maxDistance, int maxTime, int distancePOI, int timePOI, int minDistance, int minTime)
+    public  ArrayList<ArrayList<GeoPosition>> findPOIs(int POInumber, ArrayList<GeoPosition> points, int maxDistance, int maxTime, int distancePOI, int timePOI, int minDistance, int minTime)
     {
         String formula = createStatementFormula(POInumber, points, maxDistance, maxTime, distancePOI, timePOI, minDistance, minTime);
         try {
@@ -59,27 +92,27 @@ public class QueryExecuter {
         }
     }
 
-    private static ArrayList<ArrayList<GeoPosition>> convertResultSetToList(ResultSet result)
+    private  ArrayList<ArrayList<GeoPosition>> convertResultSetToList(ResultSet result)
     {
         //TO DO
         return null;
     }
 
-    private static String createStatementFormula(int POInumber, ArrayList<GeoPosition> points, int maxDistance, int maxTime, int distancePOI, int timePOI, int minDistance, int minTime)
+    private  String createStatementFormula(int POInumber, ArrayList<GeoPosition> points, int maxDistance, int maxTime, int distancePOI, int timePOI, int minDistance, int minTime)
     {
         String selectFormula = createSelectFormula(POInumber);
         String fromFormula = createFromFormula(POInumber, points, maxDistance, maxTime, distancePOI, timePOI, minDistance, minTime);
         return selectFormula + fromFormula;
     }
 
-    private static String createSelectFormula(int POINumber)
+    private  String createSelectFormula(int POINumber)
     {
         String formula = "";
         //SELECT
         return formula;
     }
 
-    private static String createFromFormula(int POInumber, ArrayList<GeoPosition> points, int maxDistance, int maxTime, int distancePOI, int timePOI, int minDistance, int minTime)
+    private  String createFromFormula(int POInumber, ArrayList<GeoPosition> points, int maxDistance, int maxTime, int distancePOI, int timePOI, int minDistance, int minTime)
     {
         String formula = "";
         //FROM...
@@ -93,14 +126,14 @@ public class QueryExecuter {
         return formula;
     }
 
-    private static String createJoinFormula(int POInumber, ArrayList<GeoPosition> points, int maxDistance, int maxTime, int distancePOI, int timePOI, int minDistance, int minTime)
+    private  String createJoinFormula(int POInumber, ArrayList<GeoPosition> points, int maxDistance, int maxTime, int distancePOI, int timePOI, int minDistance, int minTime)
     {
         String formula = "";
         //JOIN ...
         return formula;
     }
 
-    private static String createLastJoinFormula(int POInumber, ArrayList<GeoPosition> points, int maxDistance, int maxTime, int distancePOI, int tTimePOI, int minDistance, int minTime)
+    private  String createLastJoinFormula(int POInumber, ArrayList<GeoPosition> points, int maxDistance, int maxTime, int distancePOI, int tTimePOI, int minDistance, int minTime)
     {
         String formula = "";
         //JOIN ...
