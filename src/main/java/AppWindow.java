@@ -277,13 +277,35 @@ public class AppWindow extends JFrame{
         mapViewer.setOverlayPainter(painter);
     }
 
+    private void drawRouteInParts(ArrayList<ArrayList<GeoPosition>> points)
+    {
+        List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
+
+        for(ArrayList<GeoPosition> route : points)
+        {
+            RoutePainter routePainter = new RoutePainter(route);
+            painters.add(routePainter);
+        }
+
+        WaypointPainter<Waypoint> waypointPainter = new WaypointPainter<Waypoint>();
+        HashSet<Waypoint> hList = new HashSet<Waypoint>(listOfPoints);
+        waypointPainter.setWaypoints(hList);
+        painters.add(waypointPainter);
+
+        CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>(painters);
+        mapViewer.setOverlayPainter(painter);
+    }
+
     private void displaySimpleRoute() throws SQLException {
         if(startPoint == null || endPoint == null) return;
         ArrayList<GeoPosition> points = new ArrayList<GeoPosition>();
         points.add(startPoint.getPosition());
         points.add(endPoint.getPosition());
         points = findRoute(points);
-        drawRoute(points);
+
+        ArrayList<ArrayList<GeoPosition>> route = new ArrayList<ArrayList<GeoPosition>>();
+        route.add(points);
+        drawRouteInParts(route);
 
         updateDistanceText(getDistanceOfRoute(points));
         updateTimeText(getTimeOfRoute(points));
