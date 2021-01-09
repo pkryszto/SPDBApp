@@ -18,6 +18,7 @@ import org.jxmapviewer.viewer.WaypointPainter;
 
 import java.awt.event.*;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 import static java.lang.Integer.parseInt;
@@ -58,7 +59,9 @@ public class AppWindow extends JFrame{
     private int timeOfRoute;
 
 
-    public AppWindow()
+    private QueryExecuter queryExecuter;
+
+    public AppWindow(QueryExecuter queryExecuter)
     {
         add(mainJPanel);
         setTitle("SPDB Application");
@@ -72,6 +75,8 @@ public class AppWindow extends JFrame{
         initialize();
 
         listOfPoints = new ArrayList<Waypoint>();
+
+        this.queryExecuter = queryExecuter;
     }
 
     private void initialize()
@@ -131,7 +136,11 @@ public class AppWindow extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 GeoPosition geo = mapViewer.convertPointToGeoPosition(mapPoint);
-                setStartPoint(new DefaultWaypoint(geo));
+                try {
+                    setStartPoint(new DefaultWaypoint(geo));
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
             }
         });
 
@@ -139,7 +148,11 @@ public class AppWindow extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 GeoPosition geo = mapViewer.convertPointToGeoPosition(mapPoint);
-                setEndPoint(new DefaultWaypoint(geo));
+                try {
+                    setEndPoint(new DefaultWaypoint(geo));
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
             }
         });
     }
@@ -156,7 +169,7 @@ public class AppWindow extends JFrame{
 
     private void initializeCategories()
     {
-        ArrayList<String> categories = QueryExecuter.getPOICategories();
+        ArrayList<String> categories = queryExecuter.getPOICategories();
 
         for(String cat : categories)
         {
@@ -213,8 +226,7 @@ public class AppWindow extends JFrame{
         mapViewer.setOverlayPainter(painter);
     }
 
-    private void setStartPoint(DefaultWaypoint point)
-    {
+    private void setStartPoint(DefaultWaypoint point) throws SQLException {
         if(startPoint != null)
         {
             for(int i = 0; i < listOfPoints.size(); i++)
@@ -232,8 +244,7 @@ public class AppWindow extends JFrame{
         displaySimpleRoute();
     }
 
-    private void setEndPoint(DefaultWaypoint point)
-    {
+    private void setEndPoint(DefaultWaypoint point) throws SQLException {
         if(endPoint != null)
         {
             for(int i = 0; i < listOfPoints.size(); i++)
@@ -266,8 +277,7 @@ public class AppWindow extends JFrame{
         mapViewer.setOverlayPainter(painter);
     }
 
-    private void displaySimpleRoute()
-    {
+    private void displaySimpleRoute() throws SQLException {
         if(startPoint == null || endPoint == null) return;
         ArrayList<GeoPosition> points = new ArrayList<GeoPosition>();
         points.add(startPoint.getPosition());
@@ -279,19 +289,18 @@ public class AppWindow extends JFrame{
         updateTimeText(getTimeOfRoute(points));
     }
 
-    private ArrayList<GeoPosition> findRoute(ArrayList<GeoPosition> points)
-    {
-        return QueryExecuter.findRoute(points);
+    private ArrayList<GeoPosition> findRoute(ArrayList<GeoPosition> points) throws SQLException {
+        return queryExecuter.findRoute(points);
     }
 
     private int getDistanceOfRoute(ArrayList<GeoPosition> points)
     {
-        return QueryExecuter.getDistanceOfRoute(points);
+        return queryExecuter.getDistanceOfRoute(points);
     }
 
     private int getTimeOfRoute(ArrayList<GeoPosition> points)
     {
-        return QueryExecuter.getTimeOfRoute(points);
+        return queryExecuter.getTimeOfRoute(points);
     }
 
     private void updateDistanceText(int km)
@@ -370,7 +379,7 @@ public class AppWindow extends JFrame{
         int minTime = getMinTime();
         ArrayList<GeoPosition> points = new ArrayList<GeoPosition>(Arrays.asList(startPoint.getPosition(), endPoint.getPosition()));
 
-        return QueryExecuter.findPOIs(POInumber, points, maxDistance, maxTime, distancePOI, timePOI, minDistance, minTime);
+        return queryExecuter.findPOIs(POInumber, points, maxDistance, maxTime, distancePOI, timePOI, minDistance, minTime);
     }
 
     private CompoundPainter<JXMapViewer> createPainters(ArrayList<ArrayList<GeoPosition>> routes)
