@@ -393,7 +393,13 @@ public class AppWindow extends JFrame{
 
     private void addPainter(List<Painter<JXMapViewer>> painters, ArrayList<GeoPosition> points)
     {
-        RoutePainter routePainter = new RoutePainter(points);
+        ArrayList<GeoPosition> route = new ArrayList<GeoPosition>();
+        try {
+            route = findRoute(points);
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        RoutePainter routePainter = new RoutePainter(route);
         painters.add(routePainter);
 
         ArrayList<Waypoint> waypoints = new ArrayList<Waypoint>();
