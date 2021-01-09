@@ -29,7 +29,7 @@ public class QueryExecuter {
         double endLng = points.get(1).getLongitude();
 
         Statement stmt = connection.createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT * FROM pgr_astar(\n" +
+        ResultSet rs = stmt.executeQuery("SELECT id, ST_AsText(geom_way) as waypoint FROM pgr_astar(\n" +
                 "    'select * from opolskie_routing',\n" +
                 "    (SELECT source FROM hh_2po_4pgr\n" +
                 "    ORDER BY ST_Distance(\n" +
@@ -45,13 +45,28 @@ public class QueryExecuter {
                 "   ) ASC limit 1),\n" +
                 "\ttrue)\n" +
                 "\t\tas waypoints\n" +
-                "JOIN hh_2po_4pgr rd ON waypoints.edge = rd.id;\n");
+                "JOIN hh_2po_4pgr rd ON waypoints.edge = rd.id ORDER BY path_seq;\n");
 
 
 
         while (rs.next()) {
-            System.out.println(rs.getDouble("y1") +" "+ rs.getDouble("x1"));
-            route.add(new GeoPosition(rs.getDouble("y1"), rs.getDouble("x1")));
+            String id = rs.getString("id");
+            //System.out.println(id);
+            String line = rs.getString("waypoint");
+            System.out.println(line);
+            line = line.replace("LINESTRING(", "");
+            line = line.replace(")", "");
+
+
+            String[] waypoints = line.split(",");
+
+            for (String waypoint : waypoints){
+                String[] coordinates = waypoint.split(" ");
+                //System.out.println(coordinates[1]+" "+coordinates[0]);
+                route.add(new GeoPosition(Double.parseDouble(coordinates[1]) , Double.parseDouble(coordinates[0])));
+            }
+
+
         }
 
         return route;
