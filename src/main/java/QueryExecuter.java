@@ -50,8 +50,8 @@ public class QueryExecuter {
 
 
         while (rs.next()) {
-            System.out.println(rs.getDouble("x1") +" "+ rs.getDouble("y1"));
-            route.add(new GeoPosition(rs.getDouble("x1"), rs.getDouble("y1")));
+            System.out.println(rs.getDouble("y1") +" "+ rs.getDouble("x1"));
+            route.add(new GeoPosition(rs.getDouble("y1"), rs.getDouble("x1")));
         }
 
         return route;
