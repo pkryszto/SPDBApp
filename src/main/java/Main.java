@@ -4,6 +4,7 @@ import java.util.Properties;
 public class Main {
 
     public static  void main(String[] args) throws SQLException {
+
         AppWindow app = new AppWindow();
         app.setVisible(true);
 

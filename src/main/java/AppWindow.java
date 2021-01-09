@@ -17,8 +17,10 @@ import org.jxmapviewer.viewer.Waypoint;
 import org.jxmapviewer.viewer.WaypointPainter;
 
 import java.awt.event.*;
-import java.lang.constant.Constable;
+import java.sql.ResultSet;
 import java.util.*;
+
+import static java.lang.Integer.parseInt;
 
 public class AppWindow extends JFrame{
     private JPanel mainJPanel;
@@ -52,6 +54,9 @@ public class AppWindow extends JFrame{
     DefaultWaypoint endPoint;
     java.awt.Point mapPoint;
 
+    private int distanceOfRoute;
+    private int timeOfRoute;
+
 
     public AppWindow()
     {
@@ -64,24 +69,18 @@ public class AppWindow extends JFrame{
         mainJPanel.setSize(600,600);
         infoPanel.setSize(200, 600);
 
+        initialize();
+
         listOfPoints = new ArrayList<Waypoint>();
+    }
+
+    private void initialize()
+    {
         initializeMapViewer();
         initializePopupMenu();
         initializeCategories();
         initializeTextFields();
-
-        GeoPosition frankfurt = new GeoPosition(50,  7, 0, 8, 41, 0);
-        GeoPosition wiesbaden = new GeoPosition(50,  5, 0, 8, 14, 0);
-        GeoPosition mainz     = new GeoPosition(50,  0, 0, 8, 16, 0);
-        GeoPosition darmstadt = new GeoPosition(49, 52, 0, 8, 39, 0);
-        GeoPosition offenbach = new GeoPosition(50,  6, 0, 8, 46, 0);
-
-
-        // Create a track from the geo-positions
-        List<GeoPosition> track = Arrays.asList(frankfurt, wiesbaden, mainz, darmstadt, offenbach);
-
-        // Set the focus
-        mapViewer.zoomToBestFit(new HashSet<GeoPosition>(track), 0.7);
+        initializeButton();
     }
 
     private void initializeMapViewer()
@@ -97,6 +96,16 @@ public class AppWindow extends JFrame{
         TileFactoryInfo info = new OSMTileFactoryInfo();
         DefaultTileFactory tileFactory = new DefaultTileFactory(info);
         mapViewer.setTileFactory(tileFactory);
+
+        GeoPosition warsaw = new GeoPosition(51.13, 21);
+        GeoPosition plock = new GeoPosition(52.32, 19.42);
+        GeoPosition nowyDwor = new GeoPosition(52.26, 20.43);
+
+        // Create a track from the geo-positions
+        List<GeoPosition> track = Arrays.asList(warsaw, plock, nowyDwor);
+
+        // Set the focus
+        mapViewer.zoomToBestFit(new HashSet<GeoPosition>(track), 0.7);
     }
 
     private void initializePopupMenu()
@@ -133,7 +142,56 @@ public class AppWindow extends JFrame{
                 setEndPoint(new DefaultWaypoint(geo));
             }
         });
+    }
 
+    private void initializeTextFields()
+    {
+        allowOnlyNumbers(maxDistanceTextField);
+        allowOnlyNumbers(maxDelayTextField);
+        allowOnlyNumbers(minDistanceToFinishTextField);
+        allowOnlyNumbers(minTimeToFinishTextField);
+        allowOnlyNumbers(distancePOITextField);
+        allowOnlyNumbers(timePOITextField);
+    }
+
+    private void initializeCategories()
+    {
+        ArrayList<String> categories = QueryExecuter.getPOICategories();
+
+        for(String cat : categories)
+        {
+            choosePOIComboBox.addItem(cat);
+        }
+    }
+
+    private void initializeButton()
+    {
+        findRouteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(startPoint == null || endPoint == null) return;
+
+                ArrayList<ArrayList<GeoPosition>> routes = findPOIs();
+                CompoundPainter<JXMapViewer> painter = createPainters(routes);
+
+                mapViewer.setOverlayPainter(painter);
+            }
+        });
+    }
+
+    private void allowOnlyNumbers(JTextField t)
+    {
+        t.addKeyListener(new KeyAdapter() {
+            public void keyTyped(KeyEvent e) {
+                char c = e.getKeyChar();
+                if (!((c >= '0') && (c <= '9') ||
+                        (c == KeyEvent.VK_BACK_SPACE) ||
+                        (c == KeyEvent.VK_DELETE))) {
+                    getToolkit().beep();
+                    e.consume();
+                }
+            }
+        });
     }
 
     private void addPointOnMap(GeoPosition position)
@@ -223,66 +281,127 @@ public class AppWindow extends JFrame{
 
     private ArrayList<GeoPosition> findRoute(ArrayList<GeoPosition> points)
     {
-        return points;
+        return QueryExecuter.findRoute(points);
     }
 
-    private String getDistanceOfRoute(ArrayList<GeoPosition> points)
+    private int getDistanceOfRoute(ArrayList<GeoPosition> points)
     {
-        return "2137km";
+        return QueryExecuter.getDistanceOfRoute(points);
     }
 
-    private String getTimeOfRoute(ArrayList<GeoPosition> points)
+    private int getTimeOfRoute(ArrayList<GeoPosition> points)
     {
-        return "21h 37min";
+        return QueryExecuter.getTimeOfRoute(points);
     }
 
-    private void updateDistanceText(String text)
+    private void updateDistanceText(int km)
     {
-        distanceText.setText("Distance: " + text);
+        distanceText.setText("Distance: " + km + "km");
+        distanceOfRoute = km;
     }
 
-    private void updateTimeText(String text)
+    private void updateTimeText(int mins)
     {
-        timeText.setText("Time: " + text);
+        timeText.setText("Time: " + convertMinutesToTime(mins));
+        timeOfRoute = mins;
     }
 
-    private void initializeCategories()
+    private int getPOIDistance()
     {
-        String categories[] = {
-                "Night club",
-                "Restaurant",
-                "Gas station"
-        };
-
-        for(String cat : categories)
-        {
-            choosePOIComboBox.addItem(cat);
-        }
+        if(distancePOITextField.getText().isEmpty()) return -1;
+        return parseInt(distancePOITextField.getText());
     }
 
-    private void allowOnlyNumbers(JTextField t)
+    private int getPOITime()
     {
-        t.addKeyListener(new KeyAdapter() {
-            public void keyTyped(KeyEvent e) {
-                char c = e.getKeyChar();
-                if (!((c >= '0') && (c <= '9') ||
-                        (c == KeyEvent.VK_BACK_SPACE) ||
-                        (c == KeyEvent.VK_DELETE))) {
-                    getToolkit().beep();
-                    e.consume();
-                }
-            }
-        });
+        if(timePOITextField.getText().isEmpty()) return -1;
+        return parseInt(timePOITextField.getText());
     }
 
-    private void initializeTextFields()
+    private int getMaxDistance()
     {
-        allowOnlyNumbers(maxDistanceTextField);
-        allowOnlyNumbers(maxDelayTextField);
-        allowOnlyNumbers(minDistanceToFinishTextField);
-        allowOnlyNumbers(minTimeToFinishTextField);
-        allowOnlyNumbers(distancePOITextField);
-        allowOnlyNumbers(timePOITextField);
+        if(maxDistanceTextField.getText().isEmpty()) return -1;
+        return parseInt(maxDistanceTextField.getText());
+    }
+
+    private int getMaxTime()
+    {
+        if(maxDelayTextField.getText().isEmpty()) return -1;
+        return parseInt(maxDelayTextField.getText());
+    }
+
+    private int getMinDistance()
+    {
+        if(minDistanceToFinishTextField.getText().isEmpty()) return -1;
+        return parseInt(minDistanceToFinishTextField.getText());
+    }
+
+    private int getMinTime()
+    {
+        if(minTimeToFinishTextField.getText().isEmpty()) return -1;
+        return parseInt(minTimeToFinishTextField.getText());
+    }
+
+
+    private int computePOINumber()
+    {
+        int distanceValue = getPOIDistance();
+        int timeValue = getPOITime();
+
+        int distanceNumber = distanceOfRoute / distanceValue;
+        if (distanceOfRoute % distanceValue == 0) distanceNumber--;
+        int timeNumber = timeOfRoute / timeValue;
+        if (timeOfRoute % timeValue == 0) timeNumber--;
+
+        if(distanceValue == -1) return timeNumber;
+        else if(timeValue == -1) return distanceNumber;
+
+        return distanceNumber < timeNumber ? distanceNumber : timeNumber;
+    }
+
+    private ArrayList<ArrayList<GeoPosition>> findPOIs()
+    {
+        int POInumber = computePOINumber();
+        int maxDistance = getMaxDistance();
+        int maxTime = getMaxTime();
+        int distancePOI = getPOIDistance();
+        int timePOI = getPOITime();
+        int minDistance = getMinDistance();
+        int minTime = getMinTime();
+        ArrayList<GeoPosition> points = new ArrayList<GeoPosition>(Arrays.asList(startPoint.getPosition(), endPoint.getPosition()));
+
+        return QueryExecuter.findPOIs(POInumber, points, maxDistance, maxTime, distancePOI, timePOI, minDistance, minTime);
+    }
+
+    private CompoundPainter<JXMapViewer> createPainters(ArrayList<ArrayList<GeoPosition>> routes)
+    {
+        List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
+        for (ArrayList<GeoPosition> list : routes) addPainter(painters, list);
+
+        CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>(painters);
+        return painter;
+    }
+
+    private void addPainter(List<Painter<JXMapViewer>> painters, ArrayList<GeoPosition> points)
+    {
+        RoutePainter routePainter = new RoutePainter(points);
+        painters.add(routePainter);
+
+        ArrayList<Waypoint> waypoints = new ArrayList<Waypoint>();
+        for(GeoPosition geo : points) waypoints.add(new DefaultWaypoint(geo));
+
+        WaypointPainter<Waypoint> waypointPainter = new WaypointPainter<Waypoint>();
+        HashSet<Waypoint> hList = new HashSet<Waypoint>(waypoints);
+        waypointPainter.setWaypoints(hList);
+        painters.add(waypointPainter);
+    }
+
+    private String convertMinutesToTime(int minutes)
+    {
+        int hours = minutes / 60;
+        int mins = minutes % 60;
+        if(hours == 0) return ""+mins+"min";
+        return ""+hours+"h "+mins+"min";
     }
 
 }
