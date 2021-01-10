@@ -301,29 +301,16 @@ public class AppWindow extends JFrame{
         ArrayList<GeoPosition> points = new ArrayList<GeoPosition>();
         points.add(startPoint.getPosition());
         points.add(endPoint.getPosition());
-        ArrayList<ArrayList<GeoPosition>> route = new ArrayList<ArrayList<GeoPosition>>();
-        route = findRoute(points);
 
+        Route route = findRoute(points);
+        drawRouteInParts(route.route);
 
-        //route.add(points);
-        drawRouteInParts(route);
-
-        updateDistanceText(getDistanceOfRoute(route));
-        updateTimeText(getTimeOfRoute(route));
+        updateDistanceText((int) route.distance);
+        updateTimeText(route.time);
     }
 
-    private ArrayList<ArrayList<GeoPosition>> findRoute(ArrayList<GeoPosition> points) throws SQLException {
+    private Route findRoute(ArrayList<GeoPosition> points) throws SQLException {
         return queryExecuter.findRoute(points);
-    }
-
-    private int getDistanceOfRoute(ArrayList<ArrayList<GeoPosition>> points)
-    {
-        return queryExecuter.getDistanceOfRoute(points);
-    }
-
-    private int getTimeOfRoute(ArrayList<ArrayList<GeoPosition>> points)
-    {
-        return queryExecuter.getTimeOfRoute(points);
     }
 
     private void updateDistanceText(int km)
