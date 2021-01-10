@@ -84,9 +84,10 @@ public class QueryExecuter {
 
     public static ArrayList<String> getPOICategories()
     {
-        //SELECT...
         ArrayList<String> categories = new ArrayList<String>(Arrays.asList(
-                "Night club",
+                "Toilet",
+                "Fast Food",
+                "Charging station",
                 "Restaurant",
                 "Gas station"));
         return categories;
