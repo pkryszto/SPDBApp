@@ -10,7 +10,7 @@ public class QueryExecuter {
 
     public  QueryExecuter()
     {
-        String url = "jdbc:postgresql://spdb.ckvqlgxx5bxn.us-east-2.rds.amazonaws.com/SPDB?user=postgres&password=Lofciamspdb1";
+        String url = "jdbc:postgresql://spdb.ckvqlgxx5bxn.us-east-2.rds.amazonaws.com/SPDBPolska?user=postgres&password=Lofciamspdb1";
         try {
             connection = DriverManager.getConnection(url);
             System.out.println("Connected to the PostgreSQL server successfully.");
@@ -29,29 +29,32 @@ public class QueryExecuter {
         double endLng = points.get(1).getLongitude();
 
         Statement stmt = connection.createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT id, ST_AsText(geom_way) as waypoint FROM pgr_astar(\n" +
-                "    'select * from opolskie_routing',\n" +
-                "    (SELECT source FROM hh_2po_4pgr\n" +
-                "    ORDER BY ST_Distance(\n" +
-                "        ST_StartPoint(geom_way),\n" +
-                "        ST_SetSRID(ST_MakePoint("+starLng+","+startLat+"), 4326),\n" +
-                "        true\n" +
-                "   ) ASC limit 1),\n" +
-                "\t(SELECT source FROM hh_2po_4pgr\n" +
-                "    ORDER BY ST_Distance(\n" +
-                "        ST_StartPoint(geom_way),\n" +
-                "        ST_SetSRID(ST_MakePoint("+endLng+","+endLat+" ), 4326),\n" +
-                "        true\n" +
-                "   ) ASC limit 1),\n" +
-                "\ttrue)\n" +
-                "\t\tas waypoints\n" +
-                "JOIN hh_2po_4pgr rd ON waypoints.edge = rd.id ORDER BY path_seq;\n");
+        ResultSet rs = stmt.executeQuery("SELECT ST_AsText(geom_way) as waypoint FROM pgr_astar(\n" +
+                "    'select * from routing2 where (Select ST_Distance(\n" +
+                "\t\t\tST_Transform(geom_way,26986),\n" +
+                "\t\t\tST_Transform(ST_SetSRID(ST_MakePoint("+starLng+","+startLat+"), 4326),26986)\n" +
+                "\t\t)) < 10000 \n" +
+                "\t\tOR\n" +
+                "\t\t(Select ST_Distance(\n" +
+                "\t\t\tST_Transform(geom_way,26986),\n" +
+                "\t\t\tST_Transform(ST_SetSRID(ST_MakePoint("+endLng+","+endLat+"), 4326),26986)\n" +
+                "\t\t)) < 10000 \n" +
+                "\t\tOR clazz < 20  \n" +
+                "\t',\n" +
+                "    (SELECT source FROM ways \n" +
+                "\t\tORDER BY geom_way <-> ST_SetSRID(ST_MakePoint("+starLng+","+startLat+"), 4326)\n" +
+                "\t\tLIMIT 1),\n" +
+                "\t(SELECT source FROM ways \n" +
+                "\t\tORDER BY geom_way <-> ST_SetSRID(ST_MakePoint("+endLng+","+endLat+"), 4326)\n" +
+                "\t\tLIMIT 1),\n" +
+                "\ttrue\n" +
+                ") as waypoints\n" +
+                "JOIN ways rd ON waypoints.edge = rd.id;");
 
 
         while (rs.next()) {
-            String id = rs.getString("id");
             String line = rs.getString("waypoint");
-            System.out.println(line);
+
             line = line.replace("LINESTRING(", "");
             line = line.replace(")", "");
 
