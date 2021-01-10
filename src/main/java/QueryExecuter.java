@@ -161,4 +161,19 @@ public class QueryExecuter {
         return formula;
     }
 
+    private String mapPOICategory(String type){
+        return switch (type) {
+            case "fuel" -> "Gas station";
+            case "Gas station" -> "fuel";
+            case "fast_food" -> "Fast Food";
+            case "Fast Food" -> "fast_food";
+            case "charging_station" -> "Charging station";
+            case "Charging station" -> "charging_station";
+            case "restaurant" -> "Restaurant";
+            case "Restaurant" -> "restaurant";
+            case "Toilet" -> "toilets";
+            default -> "Toilet";
+        };
+    }
+
 }
