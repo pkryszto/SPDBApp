@@ -20,7 +20,7 @@ public class QueryExecuter {
         }
     }
 
-    public Route findRoute(ArrayList<GeoPosition> points) throws SQLException {
+    public Route findRoute(ArrayList<GeoPosition> points, int tableNumber) throws SQLException {
         ArrayList<ArrayList<GeoPosition>> route= new ArrayList<>();
         double distance = 0;
         double time = 0;
@@ -31,17 +31,24 @@ public class QueryExecuter {
         double endLng = points.get(1).getLongitude();
 
         Statement stmt = connection.createStatement();
+
+        stmt.executeUpdate(
+                "CREATE TEMPORARY TABLE WAYS_"+ tableNumber + " AS (\n"+
+                        "select * from routing2 where (Select ST_Distance(\n" +
+                        "\t\t\tST_Transform(geom_way,26986),\n" +
+                        "\t\t\tST_Transform(ST_SetSRID(ST_MakePoint("+starLng+","+startLat+"), 4326),26986)\n" +
+                        "\t\t)) < 20000 \n" +
+                        "\t\tOR\n" +
+                        "\t\t(Select ST_Distance(\n" +
+                        "\t\t\tST_Transform(geom_way,26986),\n" +
+                        "\t\t\tST_Transform(ST_SetSRID(ST_MakePoint("+endLng+","+endLat+"), 4326),26986)\n" +
+                        "\t\t)) < 20000 \n" +
+                        "\t\tOR clazz < 20)  \n"+
+                        "WITH DATA;"
+        );
+
         ResultSet rs = stmt.executeQuery("SELECT ST_AsText(geom_way) as waypoint, km as distance, kmh as speed FROM pgr_astar(\n" +
-                "    'select * from routing2 where (Select ST_Distance(\n" +
-                "\t\t\tST_Transform(geom_way,26986),\n" +
-                "\t\t\tST_Transform(ST_SetSRID(ST_MakePoint("+starLng+","+startLat+"), 4326),26986)\n" +
-                "\t\t)) < 20000 \n" +
-                "\t\tOR\n" +
-                "\t\t(Select ST_Distance(\n" +
-                "\t\t\tST_Transform(geom_way,26986),\n" +
-                "\t\t\tST_Transform(ST_SetSRID(ST_MakePoint("+endLng+","+endLat+"), 4326),26986)\n" +
-                "\t\t)) < 20000 \n" +
-                "\t\tOR clazz < 20  \n" +
+                "    'select * from WAYS_"+ tableNumber +
                 "\t',\n" +
                 "    (SELECT source FROM ways \n" +
                 "\t\tORDER BY geom_way <-> ST_SetSRID(ST_MakePoint("+starLng+","+startLat+"), 4326)\n" +
