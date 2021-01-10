@@ -35,12 +35,12 @@ public class QueryExecuter {
                 "    'select * from routing2 where (Select ST_Distance(\n" +
                 "\t\t\tST_Transform(geom_way,26986),\n" +
                 "\t\t\tST_Transform(ST_SetSRID(ST_MakePoint("+starLng+","+startLat+"), 4326),26986)\n" +
-                "\t\t)) < 10000 \n" +
+                "\t\t)) < 20000 \n" +
                 "\t\tOR\n" +
                 "\t\t(Select ST_Distance(\n" +
                 "\t\t\tST_Transform(geom_way,26986),\n" +
                 "\t\t\tST_Transform(ST_SetSRID(ST_MakePoint("+endLng+","+endLat+"), 4326),26986)\n" +
-                "\t\t)) < 10000 \n" +
+                "\t\t)) < 20000 \n" +
                 "\t\tOR clazz < 20  \n" +
                 "\t',\n" +
                 "    (SELECT source FROM ways \n" +
@@ -81,17 +81,6 @@ public class QueryExecuter {
         return new Route(route,distance,(int)(time*60));
     }
 
-    public int getDistanceOfRoute(ArrayList<ArrayList<GeoPosition>> points)
-    {
-        //SELECT...
-        return 2137;
-    }
-
-    public int getTimeOfRoute(ArrayList<ArrayList<GeoPosition>> points)
-    {
-        //SELECT...
-        return 1297;
-    }
 
     public static ArrayList<String> getPOICategories()
     {
