@@ -301,26 +301,27 @@ public class AppWindow extends JFrame{
         ArrayList<GeoPosition> points = new ArrayList<GeoPosition>();
         points.add(startPoint.getPosition());
         points.add(endPoint.getPosition());
-        points = findRoute(points);
-
         ArrayList<ArrayList<GeoPosition>> route = new ArrayList<ArrayList<GeoPosition>>();
-        route.add(points);
+        route = findRoute(points);
+
+
+        //route.add(points);
         drawRouteInParts(route);
 
-        updateDistanceText(getDistanceOfRoute(points));
-        updateTimeText(getTimeOfRoute(points));
+        updateDistanceText(getDistanceOfRoute(route));
+        updateTimeText(getTimeOfRoute(route));
     }
 
-    private ArrayList<GeoPosition> findRoute(ArrayList<GeoPosition> points) throws SQLException {
+    private ArrayList<ArrayList<GeoPosition>> findRoute(ArrayList<GeoPosition> points) throws SQLException {
         return queryExecuter.findRoute(points);
     }
 
-    private int getDistanceOfRoute(ArrayList<GeoPosition> points)
+    private int getDistanceOfRoute(ArrayList<ArrayList<GeoPosition>> points)
     {
         return queryExecuter.getDistanceOfRoute(points);
     }
 
-    private int getTimeOfRoute(ArrayList<GeoPosition> points)
+    private int getTimeOfRoute(ArrayList<ArrayList<GeoPosition>> points)
     {
         return queryExecuter.getTimeOfRoute(points);
     }
@@ -416,11 +417,7 @@ public class AppWindow extends JFrame{
     private void addPainter(List<Painter<JXMapViewer>> painters, ArrayList<GeoPosition> points)
     {
         ArrayList<GeoPosition> route = new ArrayList<GeoPosition>();
-        try {
-            route = findRoute(points);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
+        // route = findRoute(points);
         RoutePainter routePainter = new RoutePainter(route);
         painters.add(routePainter);
 
