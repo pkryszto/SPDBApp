@@ -361,6 +361,12 @@ public class AppWindow extends JFrame{
         return parseInt(minTimeToFinishTextField.getText());
     }
 
+    private String getPOICategory()
+    {
+        if(choosePOIComboBox.getSelectedItem().toString().equals("Choose POI category")) return "-1";
+        return choosePOIComboBox.getSelectedItem().toString();
+    }
+
 
     private int computePOINumber()
     {
@@ -387,9 +393,10 @@ public class AppWindow extends JFrame{
         int timePOI = getPOITime();
         int minDistance = getMinDistance();
         int minTime = getMinTime();
+        String POICategory = getPOICategory();
         ArrayList<GeoPosition> points = new ArrayList<GeoPosition>(Arrays.asList(startPoint.getPosition(), endPoint.getPosition()));
 
-        return queryExecuter.findPOIs(POInumber, points, maxDistance, maxTime, distancePOI, timePOI, minDistance, minTime);
+        return queryExecuter.findPOIs(POInumber, points, maxDistance, maxTime, distancePOI, timePOI, minDistance, minTime, POICategory);
     }
 
     private CompoundPainter<JXMapViewer> createPainters(ArrayList<ArrayList<GeoPosition>> routes)
