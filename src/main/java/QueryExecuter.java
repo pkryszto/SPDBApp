@@ -82,10 +82,9 @@ public class QueryExecuter {
             }
             route.add(path);
 
-            insertWaysNearRoute(path, 50, 10000);
-
         }
 
+        insertWaysNearRoute(route, 50, 10000);
 
         return new Route(route,distance,(int)(time*60));
     }
@@ -210,9 +209,13 @@ public class QueryExecuter {
         );
     }
 
-    private void insertWaysNearRoute(ArrayList<GeoPosition> route, int range, int routesNumber) throws SQLException {
-        GeoPosition currentPoint = route.get(0);
-        insertRoutesNearPoint(currentPoint, routesNumber);
+    private GeoPosition insertWaysNearPath(ArrayList<GeoPosition> route, int range, int routesNumber, GeoPosition point) throws SQLException {
+        GeoPosition currentPoint = point;
+        if(calculateDistance(point, route.get(0)) >= range)
+        {
+            currentPoint = route.get(0);
+            insertRoutesNearPoint(currentPoint, routesNumber);
+        }
 
         for(int i = 1; i < route.size(); i++)
         {
@@ -221,6 +224,21 @@ public class QueryExecuter {
             currentPoint = route.get(i);
             insertRoutesNearPoint(currentPoint, routesNumber);
         }
+
+        return currentPoint;
+
+    }
+
+    private void insertWaysNearRoute(ArrayList<ArrayList<GeoPosition>> route, int range, int routesNumber) throws SQLException
+    {
+        GeoPosition point = route.get(0).get(0);
+        insertRoutesNearPoint(point, routesNumber);
+
+        for(ArrayList<GeoPosition> path : route)
+        {
+            point = insertWaysNearPath(path, range, routesNumber, point);
+        }
+
     }
 
 }
