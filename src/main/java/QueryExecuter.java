@@ -98,13 +98,67 @@ public class QueryExecuter {
         }
 
 
-        ArrayList<Poi> pois = findPOIs(50, 50, 50, 60, 60, 50, "Gas station");
+        //ArrayList<Poi> pois = findPOIs(50, 50, 50, 60, 60, 50, "Gas station");
 
-        for (Poi poi: pois) {
-            insertRoutesNearPoint(poi.location,10000);
+
+
+
+
+        return new Route(route, distance, (int) (time * 60));
+    }
+
+    public Route findFinalRoute(ArrayList<GeoPosition> points) throws SQLException {
+        ArrayList<ArrayList<GeoPosition>> route = new ArrayList<>();
+        double distance = 0;
+        double time = 0;
+        double startLat = points.get(0).getLatitude();
+        double starLng = points.get(0).getLongitude();
+
+        double endLat = points.get(1).getLatitude();
+        double endLng = points.get(1).getLongitude();
+
+        Statement stmt = connection.createStatement();
+
+
+        ResultSet rs = stmt.executeQuery(
+                "SELECT geom_way,ST_AsText(geom_way) as waypoint, km as distance, kmh as speed FROM pgr_astar(\n" +
+                        "    'select * from WAYS_" + sessionNumber +
+                        "\t',\n" +
+                        "    (SELECT source FROM WAYS_" + sessionNumber +"\n" +
+                        "\t\tORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + starLng + "," + startLat + "), 4326)\n" +
+                        "\t\tLIMIT 1),\n" +
+                        "\t(SELECT source FROM WAYS_" + sessionNumber +"\n" +
+                        "\t\tORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + endLng + "," + endLat + "), 4326)\n" +
+                        "\t\tLIMIT 1),\n" +
+                        "\ttrue\n" +
+                        ") as waypoints\n" +
+                        "JOIN ways rd ON waypoints.edge = rd.id;"
+        );
+
+
+
+        while (rs.next()) {
+            distance += rs.getDouble("distance");
+            time += rs.getDouble("distance") / rs.getDouble("speed");
+
+            String line = rs.getString("waypoint");
+
+            line = line.replace("LINESTRING(", "");
+            line = line.replace(")", "");
+
+
+            String[] waypoints = line.split(",");
+
+            ArrayList<GeoPosition> path = new ArrayList<>();
+
+            for (String waypoint : waypoints) {
+                String[] coordinates = waypoint.split(" ");
+                path.add(new GeoPosition(Double.parseDouble(coordinates[1]), Double.parseDouble(coordinates[0])));
+
+            }
+            route.add(path);
+
         }
-
-
 
         return new Route(route, distance, (int) (time * 60));
     }
@@ -171,6 +225,9 @@ public class QueryExecuter {
         }
         System.out.println(pois);
 
+        for (Poi poi: pois) {
+            insertRoutesNearPoint(poi.location,10000);
+        }
         return pois;
     }
 

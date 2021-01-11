@@ -175,15 +175,16 @@ public class AppWindow extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 if (startPoint == null || endPoint == null) return;
 
-                ArrayList<ArrayList<GeoPosition>> routes = null;
+                ArrayList<Route> routes = null;
                 try {
                     routes = findPOIs();
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
                 }
-                CompoundPainter<JXMapViewer> painter = createPainters(routes);
 
-                mapViewer.setOverlayPainter(painter);
+                //CompoundPainter<JXMapViewer> painter = createPainters(routes);
+
+                //mapViewer.setOverlayPainter(painter);
             }
         });
     }
@@ -362,7 +363,7 @@ public class AppWindow extends JFrame {
         return distanceNumber < timeNumber ? distanceNumber : timeNumber;
     }
 
-    private ArrayList<ArrayList<GeoPosition>> findPOIs() throws SQLException {
+    private ArrayList<Route> findPOIs() throws SQLException {
         int POInumber = computePOINumber();
         int maxDistance = getMaxDistance();
         int maxTime = getMaxTime();
@@ -371,9 +372,27 @@ public class AppWindow extends JFrame {
         int minDistance = getMinDistance();
         int minTime = getMinTime();
         String POICategory = getPOICategory();
-        ArrayList<GeoPosition> points = new ArrayList<GeoPosition>(Arrays.asList(startPoint.getPosition(), endPoint.getPosition()));
-    return null;
-       // return queryExecuter.findPOIs(POInumber, points, maxDistance, maxTime, distancePOI, timePOI, minDistance, minTime, POICategory);
+
+        ArrayList<Poi> pois = queryExecuter.findPOIs( 50,60, distancePOI, timePOI, minDistance, minTime, POICategory);
+
+        ArrayList<GeoPosition> points = new ArrayList<GeoPosition>();
+
+        points.add(startPoint.getPosition());
+        for (Poi poi : pois){
+            points.add(poi.location);
+        }
+        points.add(endPoint.getPosition());
+
+        ArrayList<Route> finalRoute = new ArrayList<>();
+
+        for (int i = 0; i< points.size()-1;i++){
+            ArrayList<GeoPosition> tempPoints = new ArrayList<GeoPosition>();
+            tempPoints.add(startPoint.getPosition());
+            tempPoints.add(endPoint.getPosition());
+            finalRoute.add(queryExecuter.findFinalRoute(tempPoints));
+        }
+
+        return finalRoute;
     }
 
     private CompoundPainter<JXMapViewer> createPainters(ArrayList<ArrayList<GeoPosition>> routes) {
