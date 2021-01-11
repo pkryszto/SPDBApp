@@ -33,18 +33,15 @@ public class QueryExecuter {
         Statement stmt = connection.createStatement();
 
         stmt.executeUpdate(
-                "CREATE TEMPORARY TABLE WAYS_"+ tableNumber + " AS (\n"+
-                        "select * from routing2 where (Select ST_Distance(\n" +
-                        "\t\t\tST_Transform(geom_way,26986),\n" +
-                        "\t\t\tST_Transform(ST_SetSRID(ST_MakePoint("+starLng+","+startLat+"), 4326),26986)\n" +
-                        "\t\t)) < 20000 \n" +
-                        "\t\tOR\n" +
-                        "\t\t(Select ST_Distance(\n" +
-                        "\t\t\tST_Transform(geom_way,26986),\n" +
-                        "\t\t\tST_Transform(ST_SetSRID(ST_MakePoint("+endLng+","+endLat+"), 4326),26986)\n" +
-                        "\t\t)) < 20000 \n" +
-                        "\t\tOR clazz < 20)  \n"+
-                        "WITH DATA;"
+        "CREATE TEMPORARY TABLE WAYS_"+ tableNumber + " AS (SELECT * from routing2\n" +
+                "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint("+starLng+","+startLat+"), 4326)\n" +
+                "LIMIT 20000)\n" +
+                "UNION (SELECT * from routing2\n" +
+                "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint("+endLng+","+endLat+"), 4326)\n" +
+                "LIMIT 20000)\n" +
+                "UNION (select * from fast_ways\n" +
+                "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint("+(starLng+endLng)/2 +","+(startLat+endLat)/2 +"), 4326)\n" +
+                "LIMIT 30000)"
         );
 
         ResultSet rs = stmt.executeQuery("SELECT ST_AsText(geom_way) as waypoint, km as distance, kmh as speed FROM pgr_astar(\n" +
