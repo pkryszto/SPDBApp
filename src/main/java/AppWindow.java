@@ -175,7 +175,12 @@ public class AppWindow extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 if (startPoint == null || endPoint == null) return;
 
-                ArrayList<ArrayList<GeoPosition>> routes = findPOIs();
+                ArrayList<ArrayList<GeoPosition>> routes = null;
+                try {
+                    routes = findPOIs();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
                 CompoundPainter<JXMapViewer> painter = createPainters(routes);
 
                 mapViewer.setOverlayPainter(painter);
@@ -281,7 +286,10 @@ public class AppWindow extends JFrame {
         ArrayList<GeoPosition> points = new ArrayList<GeoPosition>();
         points.add(startPoint.getPosition());
         points.add(endPoint.getPosition());
-        queryExecuter.setSessionNumber((int) (Math.random() * 99999));
+
+        //DO TESTÓW 1337
+        queryExecuter.setSessionNumber(1337);
+        //queryExecuter.setSessionNumber((int) (Math.random() * 99999));
         Route route = findRoute(points);
         drawRouteInParts(route.route);
 
@@ -354,7 +362,7 @@ public class AppWindow extends JFrame {
         return distanceNumber < timeNumber ? distanceNumber : timeNumber;
     }
 
-    private ArrayList<ArrayList<GeoPosition>> findPOIs() {
+    private ArrayList<ArrayList<GeoPosition>> findPOIs() throws SQLException {
         int POInumber = computePOINumber();
         int maxDistance = getMaxDistance();
         int maxTime = getMaxTime();
