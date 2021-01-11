@@ -57,7 +57,6 @@ public class AppWindow extends JFrame{
 
     private int distanceOfRoute;
     private int timeOfRoute;
-    private int currentSession;
 
 
     private QueryExecuter queryExecuter;
@@ -302,8 +301,7 @@ public class AppWindow extends JFrame{
         ArrayList<GeoPosition> points = new ArrayList<GeoPosition>();
         points.add(startPoint.getPosition());
         points.add(endPoint.getPosition());
-
-        currentSession = (int) (Math.random()*99999);
+        queryExecuter.setSessionNumber((int) (Math.random()*99999));
         Route route = findRoute(points);
         drawRouteInParts(route.route);
 
@@ -312,7 +310,7 @@ public class AppWindow extends JFrame{
     }
 
     private Route findRoute(ArrayList<GeoPosition> points) throws SQLException {
-        return queryExecuter.findRoute(points, currentSession);
+        return queryExecuter.findRoute(points);
     }
 
     private void updateDistanceText(int km)

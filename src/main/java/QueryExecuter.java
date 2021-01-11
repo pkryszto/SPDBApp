@@ -8,6 +8,7 @@ import java.util.Arrays;
 public class QueryExecuter {
 
     private  Connection connection;
+    private int sessionNumber;
 
     public  QueryExecuter()
     {
@@ -20,7 +21,9 @@ public class QueryExecuter {
         }
     }
 
-    public Route findRoute(ArrayList<GeoPosition> points, int tableNumber) throws SQLException {
+    public void setSessionNumber(int number) {sessionNumber = number;}
+
+    public Route findRoute(ArrayList<GeoPosition> points) throws SQLException {
         ArrayList<ArrayList<GeoPosition>> route= new ArrayList<>();
         double distance = 0;
         double time = 0;
@@ -33,7 +36,7 @@ public class QueryExecuter {
         Statement stmt = connection.createStatement();
 
         stmt.executeUpdate(
-        "CREATE TEMPORARY TABLE WAYS_"+ tableNumber + " AS (SELECT * from routing2\n" +
+        "CREATE TEMPORARY TABLE WAYS_"+ sessionNumber + " AS (SELECT * from routing2\n" +
                 "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint("+starLng+","+startLat+"), 4326)\n" +
                 "LIMIT 20000)\n" +
                 "UNION (SELECT * from routing2\n" +
@@ -45,7 +48,7 @@ public class QueryExecuter {
         );
 
         ResultSet rs = stmt.executeQuery("SELECT ST_AsText(geom_way) as waypoint, km as distance, kmh as speed FROM pgr_astar(\n" +
-                "    'select * from WAYS_"+ tableNumber +
+                "    'select * from WAYS_"+ sessionNumber +
                 "\t',\n" +
                 "    (SELECT source FROM ways \n" +
                 "\t\tORDER BY geom_way <-> ST_SetSRID(ST_MakePoint("+starLng+","+startLat+"), 4326)\n" +
@@ -171,6 +174,51 @@ public class QueryExecuter {
             case "Toilet" -> "toilets";
             default -> "Toilet";
         };
+    }
+
+    private static double calculateDistance(GeoPosition g1, GeoPosition g2) {
+
+        double lat1 = g1.getLatitude();
+        double lon1 = g1.getLongitude();
+        double lat2 = g2.getLatitude();
+        double lon2 = g2.getLongitude();
+
+        if ((lat1 == lat2) && (lon1 == lon2)) {
+            return 0;
+        }
+        else {
+            double theta = lon1 - lon2;
+            double dist = Math.sin(Math.toRadians(lat1)) * Math.sin(Math.toRadians(lat2)) + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.cos(Math.toRadians(theta));
+            dist = Math.acos(dist);
+            dist = Math.toDegrees(dist);
+            dist = dist * 60 * 1.1515;
+            dist = dist * 1.609344;
+            return (dist);
+        }
+    }
+
+    private void insertRoutesNearPoint(GeoPosition point, int routesNumber) throws SQLException {
+        Statement stmt = connection.createStatement();
+        stmt.executeUpdate(
+                "INSERT INTO WAYS_" + sessionNumber + "\n" +
+                        " SELECT * from routing2\n" +
+                        "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint("+point.getLongitude()+","+point.getLatitude()+"), 4326)\n" +
+                        "LIMIT" + routesNumber + ")\n"
+
+        );
+    }
+
+    private void insertWaysNearRoute(ArrayList<GeoPosition> route, int range, int routesNumber) throws SQLException {
+        GeoPosition currentPoint = route.get(0);
+        insertRoutesNearPoint(currentPoint, routesNumber);
+
+        for(int i = 1; i < route.size(); i++)
+        {
+            if(calculateDistance(currentPoint, route.get(i)) < range) continue;
+
+            currentPoint = route.get(i);
+            insertRoutesNearPoint(currentPoint, routesNumber);
+        }
     }
 
 }
