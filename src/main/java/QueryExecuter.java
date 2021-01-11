@@ -82,6 +82,8 @@ public class QueryExecuter {
             }
             route.add(path);
 
+            insertWaysNearRoute(path, 50, 10000);
+
         }
 
 
@@ -203,7 +205,7 @@ public class QueryExecuter {
                 "INSERT INTO WAYS_" + sessionNumber + "\n" +
                         " SELECT * from routing2\n" +
                         "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint("+point.getLongitude()+","+point.getLatitude()+"), 4326)\n" +
-                        "LIMIT" + routesNumber + ")\n"
+                        "LIMIT " + routesNumber + "\n"
 
         );
     }
