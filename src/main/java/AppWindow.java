@@ -372,8 +372,8 @@ public class AppWindow extends JFrame {
         int minTime = getMinTime();
         String POICategory = getPOICategory();
         ArrayList<GeoPosition> points = new ArrayList<GeoPosition>(Arrays.asList(startPoint.getPosition(), endPoint.getPosition()));
-
-        return queryExecuter.findPOIs(POInumber, points, maxDistance, maxTime, distancePOI, timePOI, minDistance, minTime, POICategory);
+    return null;
+       // return queryExecuter.findPOIs(POInumber, points, maxDistance, maxTime, distancePOI, timePOI, minDistance, minTime, POICategory);
     }
 
     private CompoundPainter<JXMapViewer> createPainters(ArrayList<ArrayList<GeoPosition>> routes) {

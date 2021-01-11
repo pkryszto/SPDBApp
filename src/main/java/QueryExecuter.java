@@ -37,7 +37,7 @@ public class QueryExecuter {
         Statement stmt = connection.createStatement();
 
         stmt.executeUpdate(
-                "DROP TABLE IF EXISTS   WAYS_" + sessionNumber + ";CREATE TABLE WAYS_" + sessionNumber + " AS (SELECT * from routing2\n" +
+                "DROP TABLE IF EXISTS   WAYS_" + sessionNumber + "; CREATE TABLE WAYS_" + sessionNumber + " AS (SELECT * from routing2\n" +
                         "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + starLng + "," + startLat + "), 4326)\n" +
                         "LIMIT 10000)\n" +
                         "UNION (SELECT * from routing2\n" +
@@ -56,7 +56,7 @@ public class QueryExecuter {
 
         stmt.executeUpdate(
                 "DROP TABLE IF EXISTS   WAYS_" + sessionNumber + "2;CREATE TABLE WAYS_" + sessionNumber + "2 AS " +
-                        "(SELECT geom_way,ST_AsText(geom_way) as waypoint, km as distance, kmh as speed FROM pgr_astar(\n" +
+                        "(SELECT id, source, target, waypoints.cost, reverse_cost, x1, y1, x2, y2, geom_way,clazz,km,kmh FROM pgr_astar(\n" +
                         "    'select * from WAYS_" + sessionNumber +
                         "\t',\n" +
                         "    (SELECT source FROM ways \n" +
@@ -71,7 +71,7 @@ public class QueryExecuter {
         );
 
 
-        ResultSet rs = stmt.executeQuery("SELECT * FROM WAYS_" + sessionNumber + "2;");
+        ResultSet rs = stmt.executeQuery("SELECT geom_way,ST_AsText(geom_way) as waypoint, km as distance, kmh as speed FROM WAYS_" + sessionNumber + "2;");
 
 
         while (rs.next()) {
@@ -97,33 +97,36 @@ public class QueryExecuter {
 
         }
 
-        //insertWaysNearRoute(route, 50, 10000);
 
-        findPOIs(2, null,0,0,50,60,50,60, "Gas station");
+        ArrayList<Poi> pois = findPOIs(50, 50, 50, 60, 60, 50, "Gas station");
+
+        for (Poi poi: pois) {
+            insertRoutesNearPoint(poi.location,10000);
+        }
+
+
 
         return new Route(route, distance, (int) (time * 60));
     }
 
 
-    public ArrayList<ArrayList<GeoPosition>> findPOIs(int POInumber, ArrayList<GeoPosition> points, int maxDistance, int maxTime, int distancePOI, int timePOI, int minDistance, int minTime, String POICategory) throws SQLException {
+    public ArrayList<Poi> findPOIs(int lastDistance, int lastTime, int distancePOI, int minDistance, int timePOI, int minTime, String POICategory) throws SQLException {
         Statement stmt = connection.createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT * FROM WAYS_" + sessionNumber + "2;");
+        ResultSet rs = stmt.executeQuery("SELECT km as distance, kmh as speed, ST_AsText(geom_way) as waypoint  FROM WAYS_" + sessionNumber + "2;");
         double distance = 0;
         double time = 0;
 
         double distanceFromLastPoi = 0;
         double timeSinceLastPoi = 0;
 
-        ArrayList<Poi> pois =new ArrayList<>();
+        ArrayList<Poi> pois = new ArrayList<>();
         int createdPoints = 0;
-
-
 
         while (rs.next()) {
             distance += rs.getDouble("distance");
             time += rs.getDouble("distance") / rs.getDouble("speed");
-            System.out.println(distance+" "+time);
-            if (createdPoints == 0 && distance > minDistance && time > (((double)(minTime))/60)) {
+            System.out.println(distance + " " + time);
+            if (createdPoints == 0 && distance > minDistance && time > (((double) (minTime)) / 60)) {
                 String line = rs.getString("waypoint");
                 line = line.replace("LINESTRING(", "");
                 line = line.replace(")", "");
@@ -138,11 +141,11 @@ public class QueryExecuter {
                 createdPoints++;
 
 
-            }else if (createdPoints > 0){
+            } else if (createdPoints > 0) {
                 distanceFromLastPoi += rs.getDouble("distance");
                 timeSinceLastPoi += rs.getDouble("distance") / rs.getDouble("speed");
 
-                if (distanceFromLastPoi > distancePOI && timeSinceLastPoi > (((double)(timePOI))/60) ){
+                if (distanceFromLastPoi > distancePOI && timeSinceLastPoi > (((double) (timePOI)) / 60)) {
                     String line = rs.getString("waypoint");
                     line = line.replace("LINESTRING(", "");
                     line = line.replace(")", "");
@@ -159,13 +162,16 @@ public class QueryExecuter {
                     timeSinceLastPoi = 0;
                 }
 
-
             }
 
         }
 
+        if (createdPoints > 0 && distanceFromLastPoi < lastDistance && timeSinceLastPoi < lastTime) {
+            pois.remove(createdPoints - 1);
+        }
+        System.out.println(pois);
 
-        return null;
+        return pois;
     }
 
     private Poi createPoi(double searchLng, double searchLat, String POICategory) throws SQLException {
@@ -180,7 +186,7 @@ public class QueryExecuter {
             point = point.replace(")", "");
             String[] coordinates = point.split(" ");
 
-            Poi poi = new Poi(new GeoPosition(Double.parseDouble(coordinates[1]), Double.parseDouble(coordinates[0])),name);
+            Poi poi = new Poi(new GeoPosition(Double.parseDouble(coordinates[1]), Double.parseDouble(coordinates[0])), name);
             System.out.println(poi);
             return poi;
         }
@@ -279,7 +285,7 @@ public class QueryExecuter {
     private void insertRoutesNearPoint(GeoPosition point, int routesNumber) throws SQLException {
         Statement stmt = connection.createStatement();
         stmt.executeUpdate(
-                "INSERT INTO WAYS_" + sessionNumber + "\n" +
+                "INSERT INTO WAYS_" + sessionNumber + "2\n" +
                         " SELECT * from routing2\n" +
                         //"WHERE NOT EXISTS (SELECT id from WAYS_" + sessionNumber + ")\n"+
                         "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + point.getLongitude() + "," + point.getLatitude() + "), 4326)\n" +
@@ -287,7 +293,7 @@ public class QueryExecuter {
 
         );
     }
-
+/*
     private GeoPosition insertWaysNearPath(ArrayList<GeoPosition> route, int range, int routesNumber, GeoPosition point) throws SQLException {
         GeoPosition currentPoint = point;
         if (calculateDistance(point, route.get(0)) >= range) {
@@ -314,6 +320,6 @@ public class QueryExecuter {
             point = insertWaysNearPath(path, range, routesNumber, point);
         }
 
-    }
+    }*/
 
 }
