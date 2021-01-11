@@ -23,7 +23,7 @@ import java.util.*;
 
 import static java.lang.Integer.parseInt;
 
-public class AppWindow extends JFrame{
+public class AppWindow extends JFrame {
     private JPanel mainJPanel;
     private JPanel infoPanel;
     private JTextField fromTextField;
@@ -61,15 +61,14 @@ public class AppWindow extends JFrame{
 
     private QueryExecuter queryExecuter;
 
-    public AppWindow(QueryExecuter queryExecuter)
-    {
+    public AppWindow(QueryExecuter queryExecuter) {
         add(mainJPanel);
         setTitle("SPDB Application");
-        setSize(800,600);
+        setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //setResizable(false);
-        mapViewer.setSize(400,300);
-        mainJPanel.setSize(600,600);
+        mapViewer.setSize(400, 300);
+        mainJPanel.setSize(600, 600);
         infoPanel.setSize(200, 600);
 
         initialize();
@@ -79,8 +78,7 @@ public class AppWindow extends JFrame{
         this.queryExecuter = queryExecuter;
     }
 
-    private void initialize()
-    {
+    private void initialize() {
         initializeMapViewer();
         initializePopupMenu();
         initializeCategories();
@@ -88,8 +86,7 @@ public class AppWindow extends JFrame{
         initializeButton();
     }
 
-    private void initializeMapViewer()
-    {
+    private void initializeMapViewer() {
         MouseInputListener mia = new PanMouseInputListener(mapViewer);
         mapViewer.addMouseListener(mia);
         mapViewer.addMouseMotionListener(mia);
@@ -113,8 +110,7 @@ public class AppWindow extends JFrame{
         mapViewer.zoomToBestFit(new HashSet<GeoPosition>(track), 0.7);
     }
 
-    private void initializePopupMenu()
-    {
+    private void initializePopupMenu() {
         mapPopupMenu = new JPopupMenu();
         startPointItem = new JMenuItem("Set as starting point");
         endPointItem = new JMenuItem("Set as end point");
@@ -124,8 +120,7 @@ public class AppWindow extends JFrame{
         mapViewer.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if(SwingUtilities.isRightMouseButton(e))
-                {
+                if (SwingUtilities.isRightMouseButton(e)) {
                     mapPoint = e.getPoint();
                     mapPopupMenu.show(mapViewer, e.getX(), e.getY());
                 }
@@ -157,8 +152,7 @@ public class AppWindow extends JFrame{
         });
     }
 
-    private void initializeTextFields()
-    {
+    private void initializeTextFields() {
         allowOnlyNumbers(maxDistanceTextField);
         allowOnlyNumbers(maxDelayTextField);
         allowOnlyNumbers(minDistanceToFinishTextField);
@@ -167,22 +161,19 @@ public class AppWindow extends JFrame{
         allowOnlyNumbers(timePOITextField);
     }
 
-    private void initializeCategories()
-    {
+    private void initializeCategories() {
         ArrayList<String> categories = queryExecuter.getPOICategories();
 
-        for(String cat : categories)
-        {
+        for (String cat : categories) {
             choosePOIComboBox.addItem(cat);
         }
     }
 
-    private void initializeButton()
-    {
+    private void initializeButton() {
         findRouteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(startPoint == null || endPoint == null) return;
+                if (startPoint == null || endPoint == null) return;
 
                 ArrayList<ArrayList<GeoPosition>> routes = findPOIs();
                 CompoundPainter<JXMapViewer> painter = createPainters(routes);
@@ -192,8 +183,7 @@ public class AppWindow extends JFrame{
         });
     }
 
-    private void allowOnlyNumbers(JTextField t)
-    {
+    private void allowOnlyNumbers(JTextField t) {
         t.addKeyListener(new KeyAdapter() {
             public void keyTyped(KeyEvent e) {
                 char c = e.getKeyChar();
@@ -207,8 +197,7 @@ public class AppWindow extends JFrame{
         });
     }
 
-    private void addPointOnMap(GeoPosition position)
-    {
+    private void addPointOnMap(GeoPosition position) {
         DefaultWaypoint toAdd = new DefaultWaypoint(position);
 
         listOfPoints.add(toAdd);
@@ -227,12 +216,9 @@ public class AppWindow extends JFrame{
     }
 
     private void setStartPoint(DefaultWaypoint point) throws SQLException {
-        if(startPoint != null)
-        {
-            for(int i = 0; i < listOfPoints.size(); i++)
-            {
-                if(listOfPoints.get(i).getPosition() == startPoint.getPosition())
-                {
+        if (startPoint != null) {
+            for (int i = 0; i < listOfPoints.size(); i++) {
+                if (listOfPoints.get(i).getPosition() == startPoint.getPosition()) {
                     listOfPoints.remove(i);
                     break;
                 }
@@ -245,12 +231,9 @@ public class AppWindow extends JFrame{
     }
 
     private void setEndPoint(DefaultWaypoint point) throws SQLException {
-        if(endPoint != null)
-        {
-            for(int i = 0; i < listOfPoints.size(); i++)
-            {
-                if(listOfPoints.get(i).getPosition() == endPoint.getPosition())
-                {
+        if (endPoint != null) {
+            for (int i = 0; i < listOfPoints.size(); i++) {
+                if (listOfPoints.get(i).getPosition() == endPoint.getPosition()) {
                     listOfPoints.remove(i);
                     break;
                 }
@@ -262,8 +245,7 @@ public class AppWindow extends JFrame{
         displaySimpleRoute();
     }
 
-    private void drawRoute(ArrayList<GeoPosition> points)
-    {
+    private void drawRoute(ArrayList<GeoPosition> points) {
         RoutePainter routePainter = new RoutePainter(points);
         List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
         painters.add(routePainter);
@@ -277,12 +259,10 @@ public class AppWindow extends JFrame{
         mapViewer.setOverlayPainter(painter);
     }
 
-    private void drawRouteInParts(ArrayList<ArrayList<GeoPosition>> points)
-    {
+    private void drawRouteInParts(ArrayList<ArrayList<GeoPosition>> points) {
         List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
 
-        for(ArrayList<GeoPosition> route : points)
-        {
+        for (ArrayList<GeoPosition> route : points) {
             RoutePainter routePainter = new RoutePainter(route);
             painters.add(routePainter);
         }
@@ -297,11 +277,11 @@ public class AppWindow extends JFrame{
     }
 
     private void displaySimpleRoute() throws SQLException {
-        if(startPoint == null || endPoint == null) return;
+        if (startPoint == null || endPoint == null) return;
         ArrayList<GeoPosition> points = new ArrayList<GeoPosition>();
         points.add(startPoint.getPosition());
         points.add(endPoint.getPosition());
-        queryExecuter.setSessionNumber((int) (Math.random()*99999));
+        queryExecuter.setSessionNumber((int) (Math.random() * 99999));
         Route route = findRoute(points);
         drawRouteInParts(route.route);
 
@@ -313,63 +293,53 @@ public class AppWindow extends JFrame{
         return queryExecuter.findRoute(points);
     }
 
-    private void updateDistanceText(int km)
-    {
+    private void updateDistanceText(int km) {
         distanceText.setText("Distance: " + km + "km");
         distanceOfRoute = km;
     }
 
-    private void updateTimeText(int mins)
-    {
+    private void updateTimeText(int mins) {
         timeText.setText("Time: " + convertMinutesToTime(mins));
         timeOfRoute = mins;
     }
 
-    private int getPOIDistance()
-    {
-        if(distancePOITextField.getText().isEmpty()) return -1;
+    private int getPOIDistance() {
+        if (distancePOITextField.getText().isEmpty()) return -1;
         return parseInt(distancePOITextField.getText());
     }
 
-    private int getPOITime()
-    {
-        if(timePOITextField.getText().isEmpty()) return -1;
+    private int getPOITime() {
+        if (timePOITextField.getText().isEmpty()) return -1;
         return parseInt(timePOITextField.getText());
     }
 
-    private int getMaxDistance()
-    {
-        if(maxDistanceTextField.getText().isEmpty()) return -1;
+    private int getMaxDistance() {
+        if (maxDistanceTextField.getText().isEmpty()) return -1;
         return parseInt(maxDistanceTextField.getText());
     }
 
-    private int getMaxTime()
-    {
-        if(maxDelayTextField.getText().isEmpty()) return -1;
+    private int getMaxTime() {
+        if (maxDelayTextField.getText().isEmpty()) return -1;
         return parseInt(maxDelayTextField.getText());
     }
 
-    private int getMinDistance()
-    {
-        if(minDistanceToFinishTextField.getText().isEmpty()) return -1;
+    private int getMinDistance() {
+        if (minDistanceToFinishTextField.getText().isEmpty()) return -1;
         return parseInt(minDistanceToFinishTextField.getText());
     }
 
-    private int getMinTime()
-    {
-        if(minTimeToFinishTextField.getText().isEmpty()) return -1;
+    private int getMinTime() {
+        if (minTimeToFinishTextField.getText().isEmpty()) return -1;
         return parseInt(minTimeToFinishTextField.getText());
     }
 
-    private String getPOICategory()
-    {
-        if(choosePOIComboBox.getSelectedItem().toString().equals("Choose POI category")) return "-1";
+    private String getPOICategory() {
+        if (choosePOIComboBox.getSelectedItem().toString().equals("Choose POI category")) return "-1";
         return choosePOIComboBox.getSelectedItem().toString();
     }
 
 
-    private int computePOINumber()
-    {
+    private int computePOINumber() {
         int distanceValue = getPOIDistance();
         int timeValue = getPOITime();
 
@@ -378,14 +348,13 @@ public class AppWindow extends JFrame{
         int timeNumber = timeOfRoute / timeValue;
         if (timeOfRoute % timeValue == 0) timeNumber--;
 
-        if(distanceValue == -1) return timeNumber;
-        else if(timeValue == -1) return distanceNumber;
+        if (distanceValue == -1) return timeNumber;
+        else if (timeValue == -1) return distanceNumber;
 
         return distanceNumber < timeNumber ? distanceNumber : timeNumber;
     }
 
-    private ArrayList<ArrayList<GeoPosition>> findPOIs()
-    {
+    private ArrayList<ArrayList<GeoPosition>> findPOIs() {
         int POInumber = computePOINumber();
         int maxDistance = getMaxDistance();
         int maxTime = getMaxTime();
@@ -399,8 +368,7 @@ public class AppWindow extends JFrame{
         return queryExecuter.findPOIs(POInumber, points, maxDistance, maxTime, distancePOI, timePOI, minDistance, minTime, POICategory);
     }
 
-    private CompoundPainter<JXMapViewer> createPainters(ArrayList<ArrayList<GeoPosition>> routes)
-    {
+    private CompoundPainter<JXMapViewer> createPainters(ArrayList<ArrayList<GeoPosition>> routes) {
         List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
         for (ArrayList<GeoPosition> list : routes) addPainter(painters, list);
 
@@ -408,15 +376,14 @@ public class AppWindow extends JFrame{
         return painter;
     }
 
-    private void addPainter(List<Painter<JXMapViewer>> painters, ArrayList<GeoPosition> points)
-    {
+    private void addPainter(List<Painter<JXMapViewer>> painters, ArrayList<GeoPosition> points) {
         ArrayList<GeoPosition> route = new ArrayList<GeoPosition>();
         // route = findRoute(points);
         RoutePainter routePainter = new RoutePainter(route);
         painters.add(routePainter);
 
         ArrayList<Waypoint> waypoints = new ArrayList<Waypoint>();
-        for(GeoPosition geo : points) waypoints.add(new DefaultWaypoint(geo));
+        for (GeoPosition geo : points) waypoints.add(new DefaultWaypoint(geo));
 
         WaypointPainter<Waypoint> waypointPainter = new WaypointPainter<Waypoint>();
         HashSet<Waypoint> hList = new HashSet<Waypoint>(waypoints);
@@ -424,12 +391,11 @@ public class AppWindow extends JFrame{
         painters.add(waypointPainter);
     }
 
-    private String convertMinutesToTime(int minutes)
-    {
+    private String convertMinutesToTime(int minutes) {
         int hours = minutes / 60;
         int mins = minutes % 60;
-        if(hours == 0) return ""+mins+"min";
-        return ""+hours+"h "+mins+"min";
+        if (hours == 0) return "" + mins + "min";
+        return "" + hours + "h " + mins + "min";
     }
 
 }
