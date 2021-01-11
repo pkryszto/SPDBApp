@@ -45,6 +45,12 @@ public class QueryExecuter {
                         "LIMIT 20000)\n" +
                         "UNION (select * from fast_ways\n" +
                         "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + (starLng + endLng) / 2 + "," + (startLat + endLat) / 2 + "), 4326)\n" +
+                        "LIMIT 30000)\n" +
+                        "UNION (select * from fast_ways\n" +
+                        "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + (starLng + (starLng + endLng) / 2) / 2 + "," + (startLat + (startLat + endLat) / 2) / 2 + "), 4326)\n" +
+                        "LIMIT 30000)\n" +
+                        "UNION (select * from fast_ways\n" +
+                        "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + ((starLng + endLng) / 2 + endLng) / 2 + "," + ((startLat + endLat) / 2 + endLat) / 2 + "), 4326)\n" +
                         "LIMIT 30000)"
         );
 
@@ -197,6 +203,7 @@ public class QueryExecuter {
         stmt.executeUpdate(
                 "INSERT INTO WAYS_" + sessionNumber + "\n" +
                         " SELECT * from routing2\n" +
+                        //"WHERE NOT EXISTS (SELECT id from WAYS_" + sessionNumber + ")\n"+
                         "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + point.getLongitude() + "," + point.getLatitude() + "), 4326)\n" +
                         "LIMIT " + routesNumber + "\n"
 
