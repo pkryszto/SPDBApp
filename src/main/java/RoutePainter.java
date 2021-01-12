@@ -19,7 +19,8 @@ import org.jxmapviewer.painter.Painter;
  */
 public class RoutePainter implements Painter<JXMapViewer>
 {
-    private Color color = Color.RED;
+    private Color color;
+
     private boolean antiAlias = true;
 
     private List<GeoPosition> track;
@@ -27,18 +28,18 @@ public class RoutePainter implements Painter<JXMapViewer>
     /**
      * @param track the track
      */
-    public RoutePainter(List<GeoPosition> track)
+    public RoutePainter(List<GeoPosition> track, int i)
     {
         // copy the list so that changes in the 
         // original list do not have an effect here
         this.track = new ArrayList<GeoPosition>(track);
+        setColor(i);
     }
 
     @Override
     public void paint(Graphics2D g, JXMapViewer map, int w, int h)
     {
         g = (Graphics2D) g.create();
-
         // convert from viewport to world bitmap
         Rectangle rect = map.getViewportBounds();
         g.translate(-rect.x, -rect.y);
@@ -47,7 +48,7 @@ public class RoutePainter implements Painter<JXMapViewer>
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // do the drawing
-        g.setColor(Color.RED);
+        g.setColor(color);
         g.setStroke(new BasicStroke(4));
 
         drawRoute(g, map);
@@ -88,6 +89,36 @@ public class RoutePainter implements Painter<JXMapViewer>
 
             lastX = (int) pt.getX();
             lastY = (int) pt.getY();
+        }
+    }
+
+    private void setColor(int i)
+    {
+        switch (i)
+        {
+            case 0:
+                color = Color.RED;
+                break;
+            case 1:
+                color = Color.GREEN;
+                break;
+            case 2:
+                color = Color.BLUE;
+                break;
+            case 3:
+                color = Color.YELLOW;
+                break;
+            case 4:
+                color = Color.MAGENTA;
+                break;
+            case 5:
+                color = Color.BLACK;
+                break;
+            case 6:
+                color = Color.CYAN;
+                break;
+            case 7:
+                color = Color.ORANGE;
         }
     }
 }

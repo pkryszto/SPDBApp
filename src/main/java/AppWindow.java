@@ -181,7 +181,7 @@ public class AppWindow extends JFrame {
                     pois = findPOIs();
                     routes = findRouteForPOIs(pois);
                     drawRouteAndPois(pois, routes);
-                    System.out.println("DONE");
+                    updateTimeAndDistance(routes);
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
                 }
@@ -256,7 +256,7 @@ public class AppWindow extends JFrame {
     }
 
     private void drawRoute(ArrayList<GeoPosition> points) {
-        RoutePainter routePainter = new RoutePainter(points);
+        RoutePainter routePainter = new RoutePainter(points, 0);
         List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
         painters.add(routePainter);
 
@@ -273,7 +273,7 @@ public class AppWindow extends JFrame {
         List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
 
         for (ArrayList<GeoPosition> route : points) {
-            RoutePainter routePainter = new RoutePainter(route);
+            RoutePainter routePainter = new RoutePainter(route,0);
             painters.add(routePainter);
         }
 
@@ -409,14 +409,16 @@ public class AppWindow extends JFrame {
         System.out.println(routes.size() +" SIZE");
         List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
         List<Painter<JXMapViewer>> temp =  new ArrayList<Painter<JXMapViewer>>();
+        int i = 0;
 
         for(Route route : routes)
         {
             for (ArrayList<GeoPosition> path : route.route)
             {
-                RoutePainter routePainter = new RoutePainter(path);
+                RoutePainter routePainter = new RoutePainter(path, i);
                 painters.add(routePainter);
             }
+            i = (i+1) % 8;
         }
 
         CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>(painters);
@@ -431,7 +433,7 @@ public class AppWindow extends JFrame {
 
     private void addPainter(List<Painter<JXMapViewer>> painters, ArrayList<GeoPosition> points) {
         ArrayList<GeoPosition> route = new ArrayList<GeoPosition>();
-        RoutePainter routePainter = new RoutePainter(route);
+        RoutePainter routePainter = new RoutePainter(route, 0);
         painters.add(routePainter);
     }
 
