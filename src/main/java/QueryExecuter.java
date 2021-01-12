@@ -301,7 +301,7 @@ public class QueryExecuter {
     private void insertRoutesNearPoint(GeoPosition point, int routesNumber) throws SQLException {
         Statement stmt = connection.createStatement();
         stmt.executeUpdate(
-                "INSERT INTO WAYS_" + sessionNumber + "\n" +
+                "INSERT INTO WAYS_" + sessionNumber + "2\n" +
                         " SELECT * from routing2\n" +
                         "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + point.getLongitude() + "," + point.getLatitude() + "), 4326)\n" +
                         "LIMIT " + routesNumber + "\n"
