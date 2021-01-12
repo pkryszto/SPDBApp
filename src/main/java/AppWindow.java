@@ -175,9 +175,14 @@ public class AppWindow extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 if (startPoint == null || endPoint == null) return;
 
+                ArrayList<Poi> pois = null;
                 ArrayList<Route> routes = null;
+
                 try {
-                    routes = findPOIs();
+                    pois = findPOIs();
+                    routes = findRouteForPOIs(pois);
+                    drawRouteAndPois(pois, routes);
+                    System.out.println("DONE");
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
                 }
@@ -363,7 +368,7 @@ public class AppWindow extends JFrame {
         return distanceNumber < timeNumber ? distanceNumber : timeNumber;
     }
 
-    private ArrayList<Route> findPOIs() throws SQLException {
+    private ArrayList<Poi> findPOIs() throws SQLException {
         int POInumber = computePOINumber();
         int maxDistance = getMaxDistance();
         int maxTime = getMaxTime();
@@ -375,6 +380,11 @@ public class AppWindow extends JFrame {
 
         ArrayList<Poi> pois = queryExecuter.findPOIs( 50,60, distancePOI, timePOI, minDistance, minTime, POICategory);
 
+        return pois;
+    }
+
+    private ArrayList<Route> findRouteForPOIs(ArrayList<Poi> pois) throws SQLException
+    {
         ArrayList<GeoPosition> points = new ArrayList<GeoPosition>();
 
         points.add(startPoint.getPosition());
@@ -395,6 +405,20 @@ public class AppWindow extends JFrame {
         return finalRoute;
     }
 
+    private CompoundPainter<JXMapViewer> createPaintersFromList(ArrayList<Route> routes)
+    {
+        CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>();
+        CompoundPainter<JXMapViewer> temp = new CompoundPainter<JXMapViewer>();
+
+        for(Route path : routes)
+        {
+            temp = createPainters(path.route);
+            for (Painter p : temp.getPainters())  painter.addPainter(p);
+        }
+
+        return painter;
+    }
+
     private CompoundPainter<JXMapViewer> createPainters(ArrayList<ArrayList<GeoPosition>> routes) {
         List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
         for (ArrayList<GeoPosition> list : routes) addPainter(painters, list);
@@ -405,17 +429,32 @@ public class AppWindow extends JFrame {
 
     private void addPainter(List<Painter<JXMapViewer>> painters, ArrayList<GeoPosition> points) {
         ArrayList<GeoPosition> route = new ArrayList<GeoPosition>();
-        // route = findRoute(points);
         RoutePainter routePainter = new RoutePainter(route);
         painters.add(routePainter);
 
+        /*
         ArrayList<Waypoint> waypoints = new ArrayList<Waypoint>();
         for (GeoPosition geo : points) waypoints.add(new DefaultWaypoint(geo));
 
         WaypointPainter<Waypoint> waypointPainter = new WaypointPainter<Waypoint>();
         HashSet<Waypoint> hList = new HashSet<Waypoint>(waypoints);
         waypointPainter.setWaypoints(hList);
-        painters.add(waypointPainter);
+        painters.add(waypointPainter);*/
+    }
+
+    private void addPOIPainter(CompoundPainter<JXMapViewer> painters,List<Poi> pois)
+    {
+        HashSet<Waypoint> hList = new HashSet<Waypoint>();
+
+        for(Poi poi : pois)
+        {
+            DefaultWaypoint toAdd = new DefaultWaypoint(poi.location);
+            hList.add(toAdd);
+        }
+
+        WaypointPainter<Waypoint> waypointPainter = new WaypointPainter<Waypoint>();
+        waypointPainter.setWaypoints(hList);
+        painters.addPainter(waypointPainter);
     }
 
     private String convertMinutesToTime(int minutes) {
@@ -423,6 +462,20 @@ public class AppWindow extends JFrame {
         int mins = minutes % 60;
         if (hours == 0) return "" + mins + "min";
         return "" + hours + "h " + mins + "min";
+    }
+
+    private void drawRouteAndPois(ArrayList<Poi> pois, ArrayList<Route> route)
+    {
+        CompoundPainter painter = createPaintersFromList(route);
+        addPOIPainter(painter, pois);
+
+        WaypointPainter<Waypoint> waypointPainter = new WaypointPainter<Waypoint>();
+        HashSet<Waypoint> hList = new HashSet<Waypoint>(listOfPoints);
+        waypointPainter.setWaypoints(hList);
+
+        painter.addPainter(waypointPainter);
+
+        mapViewer.setOverlayPainter(painter);
     }
 
 }
