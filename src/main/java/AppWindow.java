@@ -376,7 +376,7 @@ public class AppWindow extends JFrame {
         int minTime = getMinTime();
         String POICategory = getPOICategory();
 
-        ArrayList<Poi> pois = queryExecuter.findPOIs( 50,60, distancePOI, timePOI, minDistance, minTime, POICategory);
+        ArrayList<Poi> pois = queryExecuter.findPOIs(minDistance, minTime, distancePOI, minDistanceFromStart, timePOI, minTimeFromStart, POICategory);
 
         return pois;
     }
