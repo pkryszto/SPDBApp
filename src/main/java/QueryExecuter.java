@@ -34,24 +34,33 @@ public class QueryExecuter {
         double endLat = points.get(1).getLatitude();
         double endLng = points.get(1).getLongitude();
 
+        double separation = calculateDistance(points.get(0), points.get(1));
+        System.out.println(separation);
+        int distanceFactor;
+        if (separation <=100) distanceFactor = 1;
+        if (separation > 100 && separation <= 200) distanceFactor = 2;
+        else if (separation > 200 && separation <= 300) distanceFactor = 3;
+        else if (separation > 300 && separation <= 400) distanceFactor = 4;
+        else distanceFactor = 6;
+
         Statement stmt = connection.createStatement();
 
         stmt.executeUpdate(
                 "DROP TABLE IF EXISTS   WAYS_" + sessionNumber + "; CREATE TABLE WAYS_" + sessionNumber + " AS (SELECT * from routing2\n" +
                         "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + starLng + "," + startLat + "), 4326)\n" +
-                        "LIMIT 10000)\n" +
+                        "LIMIT 15000)\n" +
                         "UNION (SELECT * from routing2\n" +
                         "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + endLng + "," + endLat + "), 4326)\n" +
-                        "LIMIT 10000)\n" +
-                        "UNION (select * from fast_ways\n" +
-                        "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + (starLng + endLng) / 2 + "," + (startLat + endLat) / 2 + "), 4326)\n" +
-                        "LIMIT 10000)\n" +
-                        "UNION (select * from fast_ways\n" +
-                        "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + (starLng + (starLng + endLng) / 2) / 2 + "," + (startLat + (startLat + endLat) / 2) / 2 + "), 4326)\n" +
                         "LIMIT 15000)\n" +
                         "UNION (select * from fast_ways\n" +
+                        "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + (starLng + endLng) / 2 + "," + (startLat + endLat) / 2 + "), 4326)\n" +
+                        "LIMIT "+5000*distanceFactor+")\n" +
+                        "UNION (select * from fast_ways\n" +
+                        "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + (starLng + (starLng + endLng) / 2) / 2 + "," + (startLat + (startLat + endLat) / 2) / 2 + "), 4326)\n" +
+                        "LIMIT "+5000*distanceFactor+")\n" +
+                        "UNION (select * from fast_ways\n" +
                         "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + ((starLng + endLng) / 2 + endLng) / 2 + "," + ((startLat + endLat) / 2 + endLat) / 2 + "), 4326)\n" +
-                        "LIMIT 15000)"
+                        "LIMIT "+5000*distanceFactor+")"
         );
 
         stmt.executeUpdate(
@@ -97,13 +106,6 @@ public class QueryExecuter {
 
         }
 
-
-        //ArrayList<Poi> pois = findPOIs(50, 50, 50, 60, 60, 50, "Gas station");
-
-
-
-
-
         return new Route(route, distance, (int) (time * 60));
     }
 
@@ -124,17 +126,16 @@ public class QueryExecuter {
                 "SELECT geom_way,ST_AsText(geom_way) as waypoint, km as distance, kmh as speed FROM pgr_astar(\n" +
                         "    'select * from WAYS_" + sessionNumber +
                         "\t',\n" +
-                        "    (SELECT source FROM WAYS_" + sessionNumber +"\n" +
+                        "    (SELECT source FROM WAYS_" + sessionNumber + "\n" +
                         "\t\tORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + starLng + "," + startLat + "), 4326)\n" +
                         "\t\tLIMIT 1),\n" +
-                        "\t(SELECT source FROM WAYS_" + sessionNumber +"\n" +
+                        "\t(SELECT source FROM WAYS_" + sessionNumber + "\n" +
                         "\t\tORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + endLng + "," + endLat + "), 4326)\n" +
                         "\t\tLIMIT 1),\n" +
                         "\ttrue\n" +
                         ") as waypoints\n" +
                         "JOIN ways rd ON waypoints.edge = rd.id;"
         );
-
 
 
         while (rs.next()) {
@@ -225,8 +226,8 @@ public class QueryExecuter {
         }
         System.out.println(pois);
 
-        for (Poi poi: pois) {
-            insertRoutesNearPoint(poi.location,10000);
+        for (Poi poi : pois) {
+            insertRoutesNearPoint(poi.location, 10000);
         }
         return pois;
     }
@@ -248,50 +249,6 @@ public class QueryExecuter {
             return poi;
         }
         return null;
-    }
-
-    private ArrayList<ArrayList<GeoPosition>> convertResultSetToList(ResultSet result) {
-        //TO DO
-        return null;
-    }
-
-    private String createStatementFormula(int POInumber, ArrayList<GeoPosition> points, int maxDistance, int maxTime, int distancePOI, int timePOI, int minDistance, int minTime, String POICategory) {
-        String selectFormula = createSelectFormula(POInumber);
-        String fromFormula = createFromFormula(POInumber, points, maxDistance, maxTime, distancePOI, timePOI, minDistance, minTime, POICategory);
-        return selectFormula + fromFormula;
-    }
-
-    private String createSelectFormula(int POINumber) {
-        String formula = "";
-        //SELECT
-        return formula;
-    }
-
-    private String createFromFormula(int POInumber, ArrayList<GeoPosition> points, int maxDistance, int maxTime, int distancePOI, int timePOI, int minDistance, int minTime, String POICategory) {
-        String formula = "";
-        //FROM...
-
-        for (int i = 0; i < POInumber - 1; i++)
-            formula += createJoinFormula(POInumber, points, maxDistance, maxTime, distancePOI, timePOI, minDistance, minTime, POICategory);
-
-        if (POInumber > 0)
-            formula += createLastJoinFormula(POInumber, points, maxDistance, maxTime, distancePOI, timePOI, minDistance, minTime, POICategory);
-
-        //WHERE
-
-        return formula;
-    }
-
-    private String createJoinFormula(int POInumber, ArrayList<GeoPosition> points, int maxDistance, int maxTime, int distancePOI, int timePOI, int minDistance, int minTime, String POICategory) {
-        String formula = "";
-        //JOIN ...
-        return formula;
-    }
-
-    private String createLastJoinFormula(int POInumber, ArrayList<GeoPosition> points, int maxDistance, int maxTime, int distancePOI, int tTimePOI, int minDistance, int minTime, String POICategory) {
-        String formula = "";
-        //JOIN ...
-        return formula;
     }
 
     private String mapPOICategory(String type) {
@@ -344,39 +301,10 @@ public class QueryExecuter {
         stmt.executeUpdate(
                 "INSERT INTO WAYS_" + sessionNumber + "2\n" +
                         " SELECT * from routing2\n" +
-                        //"WHERE NOT EXISTS (SELECT id from WAYS_" + sessionNumber + ")\n"+
                         "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + point.getLongitude() + "," + point.getLatitude() + "), 4326)\n" +
                         "LIMIT " + routesNumber + "\n"
 
         );
     }
-/*
-    private GeoPosition insertWaysNearPath(ArrayList<GeoPosition> route, int range, int routesNumber, GeoPosition point) throws SQLException {
-        GeoPosition currentPoint = point;
-        if (calculateDistance(point, route.get(0)) >= range) {
-            currentPoint = route.get(0);
-            insertRoutesNearPoint(currentPoint, routesNumber);
-        }
-
-        for (int i = 1; i < route.size(); i++) {
-            if (calculateDistance(currentPoint, route.get(i)) < range) continue;
-
-            currentPoint = route.get(i);
-            insertRoutesNearPoint(currentPoint, routesNumber);
-        }
-
-        return currentPoint;
-
-    }
-
-    private void insertWaysNearRoute(ArrayList<ArrayList<GeoPosition>> route, int range, int routesNumber) throws SQLException {
-        GeoPosition point = route.get(0).get(0);
-        insertRoutesNearPoint(point, routesNumber);
-
-        for (ArrayList<GeoPosition> path : route) {
-            point = insertWaysNearPath(path, range, routesNumber, point);
-        }
-
-    }*/
 
 }
