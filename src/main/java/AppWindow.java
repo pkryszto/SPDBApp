@@ -368,7 +368,6 @@ public class AppWindow extends JFrame {
     }
 
     private ArrayList<Poi> findPOIs() throws SQLException {
-        int POInumber = computePOINumber();
         int minDistanceFromStart = getMinDistanceFromStart();
         int minTimeFromStart = getMinTimeFromStart();
         int distancePOI = getPOIDistance();

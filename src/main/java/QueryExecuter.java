@@ -122,8 +122,9 @@ public class QueryExecuter {
         Statement stmt = connection.createStatement();
 
 
-        ResultSet rs = stmt.executeQuery(
-                "SELECT geom_way,ST_AsText(geom_way) as waypoint, km as distance, kmh as speed FROM pgr_astar(\n" +
+        stmt.executeUpdate(
+                "DROP TABLE IF EXISTS   WAYS_" + sessionNumber + "3;CREATE TABLE WAYS_" + sessionNumber + "3 AS " +
+                        "(SELECT geom_way,ST_AsText(geom_way) as waypoint, km as distance, kmh as speed FROM pgr_astar(\n" +
                         "    'select * from WAYS_" + sessionNumber +
                         "\t',\n" +
                         "    (SELECT source FROM WAYS_" + sessionNumber + "\n" +
@@ -134,9 +135,10 @@ public class QueryExecuter {
                         "\t\tLIMIT 1),\n" +
                         "\ttrue\n" +
                         ") as waypoints\n" +
-                        "JOIN ways rd ON waypoints.edge = rd.id;"
+                        "JOIN ways rd ON waypoints.edge = rd.id);"
         );
 
+        ResultSet rs = stmt.executeQuery("SELECT geom_way,waypoint,distance,speed FROM WAYS_" + sessionNumber + "3;");
 
         while (rs.next()) {
             distance += rs.getDouble("distance");
