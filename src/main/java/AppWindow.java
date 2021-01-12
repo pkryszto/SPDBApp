@@ -17,7 +17,6 @@ import org.jxmapviewer.viewer.Waypoint;
 import org.jxmapviewer.viewer.WaypointPainter;
 
 import java.awt.event.*;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -31,10 +30,8 @@ public class AppWindow extends JFrame {
     private JLabel fromLabel;
     private JLabel toLabel;
     private JTextField toTextField;
-    private JLabel maxDistanceLabel;
-    private JTextField maxDistanceTextField;
-    private JLabel maxDelayLabel;
-    private JTextField maxDelayTextField;
+    private JTextField minDistanceFromStartTextField;
+    private JTextField minTimeFromStartTextField;
     private JLabel distancePOILabel;
     private JTextField distancePOITextField;
     private JLabel timePOILabel;
@@ -46,6 +43,8 @@ public class AppWindow extends JFrame {
     private JTextArea textArea1;
     private JTextArea distanceText;
     private JTextArea timeText;
+    private JTextArea minDistanceFromStartText;
+    private JTextArea minTimeFromStartText;
     private JPopupMenu mapPopupMenu;
     private JMenuItem startPointItem;
     private JMenuItem endPointItem;
@@ -153,8 +152,8 @@ public class AppWindow extends JFrame {
     }
 
     private void initializeTextFields() {
-        allowOnlyNumbers(maxDistanceTextField);
-        allowOnlyNumbers(maxDelayTextField);
+        allowOnlyNumbers(minDistanceFromStartTextField);
+        allowOnlyNumbers(minTimeFromStartTextField);
         allowOnlyNumbers(minDistanceToFinishTextField);
         allowOnlyNumbers(minTimeToFinishTextField);
         allowOnlyNumbers(distancePOITextField);
@@ -327,14 +326,14 @@ public class AppWindow extends JFrame {
         return parseInt(timePOITextField.getText());
     }
 
-    private int getMaxDistance() {
-        if (maxDistanceTextField.getText().isEmpty()) return -1;
-        return parseInt(maxDistanceTextField.getText());
+    private int getMinDistanceFromStart() {
+        if (minDistanceFromStartTextField.getText().isEmpty()) return -1;
+        return parseInt(minDistanceFromStartTextField.getText());
     }
 
-    private int getMaxTime() {
-        if (maxDelayTextField.getText().isEmpty()) return -1;
-        return parseInt(maxDelayTextField.getText());
+    private int getMinTimeFromStart() {
+        if (minTimeFromStartTextField.getText().isEmpty()) return -1;
+        return parseInt(minTimeFromStartTextField.getText());
     }
 
     private int getMinDistance() {
@@ -370,8 +369,8 @@ public class AppWindow extends JFrame {
 
     private ArrayList<Poi> findPOIs() throws SQLException {
         int POInumber = computePOINumber();
-        int maxDistance = getMaxDistance();
-        int maxTime = getMaxTime();
+        int minDistanceFromStart = getMinDistanceFromStart();
+        int minTimeFromStart = getMinTimeFromStart();
         int distancePOI = getPOIDistance();
         int timePOI = getPOITime();
         int minDistance = getMinDistance();
@@ -397,8 +396,8 @@ public class AppWindow extends JFrame {
 
         for (int i = 0; i< points.size()-1;i++){
             ArrayList<GeoPosition> tempPoints = new ArrayList<GeoPosition>();
-            tempPoints.add(startPoint.getPosition());
-            tempPoints.add(endPoint.getPosition());
+            tempPoints.add(points.get(i));
+            tempPoints.add(points.get(i+1));
             finalRoute.add(queryExecuter.findFinalRoute(tempPoints));
         }
 
@@ -407,39 +406,33 @@ public class AppWindow extends JFrame {
 
     private CompoundPainter<JXMapViewer> createPaintersFromList(ArrayList<Route> routes)
     {
-        CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>();
-        CompoundPainter<JXMapViewer> temp = new CompoundPainter<JXMapViewer>();
-
-        for(Route path : routes)
-        {
-            temp = createPainters(path.route);
-            for (Painter p : temp.getPainters())  painter.addPainter(p);
-        }
-
-        return painter;
-    }
-
-    private CompoundPainter<JXMapViewer> createPainters(ArrayList<ArrayList<GeoPosition>> routes) {
+        System.out.println(routes.size() +" SIZE");
         List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
-        for (ArrayList<GeoPosition> list : routes) addPainter(painters, list);
+        List<Painter<JXMapViewer>> temp =  new ArrayList<Painter<JXMapViewer>>();
+
+        for(Route route : routes)
+        {
+            for (ArrayList<GeoPosition> path : route.route)
+            {
+                RoutePainter routePainter = new RoutePainter(path);
+                painters.add(routePainter);
+            }
+        }
 
         CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>(painters);
         return painter;
+    }
+
+    private List<Painter<JXMapViewer>> createPainters(ArrayList<ArrayList<GeoPosition>> routes) {
+        List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
+        for (ArrayList<GeoPosition> list : routes) addPainter(painters, list);
+        return painters;
     }
 
     private void addPainter(List<Painter<JXMapViewer>> painters, ArrayList<GeoPosition> points) {
         ArrayList<GeoPosition> route = new ArrayList<GeoPosition>();
         RoutePainter routePainter = new RoutePainter(route);
         painters.add(routePainter);
-
-        /*
-        ArrayList<Waypoint> waypoints = new ArrayList<Waypoint>();
-        for (GeoPosition geo : points) waypoints.add(new DefaultWaypoint(geo));
-
-        WaypointPainter<Waypoint> waypointPainter = new WaypointPainter<Waypoint>();
-        HashSet<Waypoint> hList = new HashSet<Waypoint>(waypoints);
-        waypointPainter.setWaypoints(hList);
-        painters.add(waypointPainter);*/
     }
 
     private void addPOIPainter(CompoundPainter<JXMapViewer> painters,List<Poi> pois)
@@ -467,6 +460,7 @@ public class AppWindow extends JFrame {
     private void drawRouteAndPois(ArrayList<Poi> pois, ArrayList<Route> route)
     {
         CompoundPainter painter = createPaintersFromList(route);
+
         addPOIPainter(painter, pois);
 
         WaypointPainter<Waypoint> waypointPainter = new WaypointPainter<Waypoint>();
@@ -476,6 +470,26 @@ public class AppWindow extends JFrame {
         painter.addPainter(waypointPainter);
 
         mapViewer.setOverlayPainter(painter);
+    }
+
+    private void updateTimeAndDistance(ArrayList<Route> route)
+    {
+        int distance = 0;
+        int time = 0;
+
+        for(Route path : route)
+        {
+            distance += path.distance;
+            time += path.time;
+        }
+
+        updateDistanceText((int) distance);
+        updateTimeText(time);
+    }
+
+    private void showError()
+    {
+        JOptionPane.showMessageDialog(mainJPanel, "Route doesn't exist", "Error", JOptionPane.PLAIN_MESSAGE);
     }
 
 }
