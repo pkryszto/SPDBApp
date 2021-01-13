@@ -253,7 +253,6 @@ public class AppWindow extends JFrame {
         }
         startPoint = point;
         fromTextField.setText(getCity(startPoint.getPosition()));
-//        fromTextField.setText(startPoint.getPosition().toString());
         addPointOnMap(point.getPosition());
         displaySimpleRoute();
     }
@@ -268,8 +267,7 @@ public class AppWindow extends JFrame {
             }
         }
         endPoint = point;
-        fromTextField.setText(getCity(startPoint.getPosition()));
-//        toTextField.setText(endPoint.getPosition().toString());
+        toTextField.setText(getCity(endPoint.getPosition()));
         addPointOnMap(point.getPosition());
         displaySimpleRoute();
     }

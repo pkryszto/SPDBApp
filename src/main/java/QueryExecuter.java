@@ -324,15 +324,19 @@ public class QueryExecuter {
 
 
         Statement stmt = locationConnection.createStatement();
-        ResultSet rs = stmt.executeQuery(
-                "SELECT name FROM cities\n"+
-                    "ORDER BY way <-> ST_SetSRID(ST_MakePoint(" + searchLng + ", " + searchLat + "), 4326)\n" +
-                    "LIMIT 1");
+        try {
+            ResultSet rs = stmt.executeQuery(
+                    "SELECT name FROM cities\n"+
+                            "ORDER BY way <-> ST_SetSRID(ST_MakePoint(" + searchLng + ", " + searchLat + "), 4326)\n" +
+                            "LIMIT 1");
 
-        while (rs.next()) {
-            String name = rs.getString("name");
+            while (rs.next()) {
+                String name = rs.getString("name");
 
-            return name;
+                return name;
+            }
+            } catch(SQLException e) {
+             return position.toString();
         }
         return null;
     }
