@@ -308,5 +308,26 @@ public class QueryExecuter {
 
         );
     }
+    
+    public String getCityName(GeoPosition position) throws SQLException {
+        Statement stmt = connection.createStatement();
+        double startLat = position.getLatitude();
+        double starLng = position.getLongitude();
+
+        stmt.executeUpdate(
+                ""
+        );
+
+        ResultSet rs = stmt.executeQuery("");
+        while (rs.next()) {
+            String name = rs.getString("name");
+            String point = rs.getString("point");
+            point = point.replace("POINT(", "");
+            point = point.replace(")", "");
+            String[] coordinates = point.split(" ");
+            return name;
+        }
+        return null;
+    }
 
 }

@@ -235,7 +235,8 @@ public class AppWindow extends JFrame {
             }
         }
         startPoint = point;
-        fromTextField.setText(startPoint.getPosition().toString());
+        fromTextField.setText(getCity(startPoint.getPosition()));
+//        fromTextField.setText(startPoint.getPosition().toString());
         addPointOnMap(point.getPosition());
         displaySimpleRoute();
     }
@@ -250,7 +251,8 @@ public class AppWindow extends JFrame {
             }
         }
         endPoint = point;
-        toTextField.setText(endPoint.getPosition().toString());
+        fromTextField.setText(getCity(startPoint.getPosition()));
+//        toTextField.setText(endPoint.getPosition().toString());
         addPointOnMap(point.getPosition());
         displaySimpleRoute();
     }
@@ -493,4 +495,7 @@ public class AppWindow extends JFrame {
         JOptionPane.showMessageDialog(mainJPanel, "Route doesn't exist", "Error", JOptionPane.PLAIN_MESSAGE);
     }
 
+    private String getCity(GeoPosition geo) throws SQLException {
+        return queryExecuter.getCityName(geo);
+    }
 }
