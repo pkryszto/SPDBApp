@@ -333,9 +333,14 @@ public class QueryExecuter {
     }
 
     public ArrayList<Address> findAddresses(String addressName) throws SQLException {
-        Statement stmt = connection.createStatement();
-        // TODO: Fill in executeQuery, get for example TOP 10 results
-        ResultSet rs = stmt.executeQuery("");
+
+        PreparedStatement stmt = locationConnection.prepareStatement("""
+                select name, ST_AsText(way) as point from cities
+                where name like '""" +addressName+ """
+                ' order by population asc
+                limit 10""");
+
+        ResultSet rs = stmt.executeQuery();
         ArrayList<Address> addresses = new ArrayList<>();
 
         while (rs.next()) {
