@@ -1,6 +1,5 @@
 import org.jxmapviewer.viewer.GeoPosition;
 
-import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,7 +44,7 @@ public class QueryExecuter {
         double separation = calculateDistance(points.get(0), points.get(1));
         System.out.println(separation);
         int distanceFactor;
-        if (separation <=100) distanceFactor = 1;
+        if (separation <= 100) distanceFactor = 1;
         if (separation > 100 && separation <= 200) distanceFactor = 2;
         else if (separation > 200 && separation <= 300) distanceFactor = 3;
         else if (separation > 300 && separation <= 400) distanceFactor = 4;
@@ -62,13 +61,13 @@ public class QueryExecuter {
                         "LIMIT 15000)\n" +
                         "UNION (select * from fast_ways\n" +
                         "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + (starLng + endLng) / 2 + "," + (startLat + endLat) / 2 + "), 4326)\n" +
-                        "LIMIT "+5000*distanceFactor+")\n" +
+                        "LIMIT " + 5000 * distanceFactor + ")\n" +
                         "UNION (select * from fast_ways\n" +
                         "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + (starLng + (starLng + endLng) / 2) / 2 + "," + (startLat + (startLat + endLat) / 2) / 2 + "), 4326)\n" +
-                        "LIMIT "+5000*distanceFactor+")\n" +
+                        "LIMIT " + 5000 * distanceFactor + ")\n" +
                         "UNION (select * from fast_ways\n" +
                         "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + ((starLng + endLng) / 2 + endLng) / 2 + "," + ((startLat + endLat) / 2 + endLat) / 2 + "), 4326)\n" +
-                        "LIMIT "+5000*distanceFactor+")"
+                        "LIMIT " + 5000 * distanceFactor + ")"
         );
 
         stmt.executeUpdate(
@@ -237,7 +236,7 @@ public class QueryExecuter {
         System.out.println(pois);
 
         for (Poi poi : pois) {
-            insertRoutesNearPoint(poi.location, 10000);
+            insertRoutesNearPoint(poi.location);
         }
         return pois;
     }
@@ -306,39 +305,31 @@ public class QueryExecuter {
         }
     }
 
-    private void insertRoutesNearPoint(GeoPosition point, int routesNumber) throws SQLException {
-        Statement stmt = connection.createStatement();
-        stmt.executeUpdate(
-                "INSERT INTO WAYS_" + sessionNumber + "2\n" +
-                        " SELECT * from routing2\n" +
-                        "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + point.getLongitude() + "," + point.getLatitude() + "), 4326)\n" +
-                        "LIMIT " + routesNumber + "\n"
-
-        );
+    private void insertRoutesNearPoint(GeoPosition position) throws SQLException {
+        PreparedStatement stmt = connection.prepareStatement("INSERT INTO WAYS_"+sessionNumber+"2\n" +
+                "                        SELECT * from routing2\n" +
+                "                        ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(?,?), 4326)\n" +
+                "                        LIMIT 10000");
+        stmt.setDouble(1, position.getLongitude());
+        stmt.setDouble(2, position.getLatitude());
+        stmt.executeUpdate();
     }
-    
+
+
+
+    /*  Returns name of the city/town/village/hamlet that is nearest given GeoPosition */
     public String getCityName(GeoPosition position) throws SQLException {
-        
-        double searchLat = position.getLatitude();
-        double searchLng = position.getLongitude();
+        PreparedStatement stmt = locationConnection.prepareStatement("""
+                SELECT name FROM cities
+                ORDER BY way <-> ST_SetSRID(ST_MakePoint(?,?), 4326)
+                LIMIT 1""");
+        stmt.setDouble(1, position.getLongitude());
+        stmt.setDouble(2, position.getLatitude());
+        ResultSet rs = stmt.executeQuery();
+        rs.next();
+        return rs.getString("name");
 
 
-        Statement stmt = locationConnection.createStatement();
-        try {
-            ResultSet rs = stmt.executeQuery(
-                    "SELECT name FROM cities\n"+
-                            "ORDER BY way <-> ST_SetSRID(ST_MakePoint(" + searchLng + ", " + searchLat + "), 4326)\n" +
-                            "LIMIT 1");
-
-            while (rs.next()) {
-                String name = rs.getString("name");
-
-                return name;
-            }
-            } catch(SQLException e) {
-             return position.toString();
-        }
-        return null;
     }
 
     public ArrayList<Address> findAddresses(String addressName) throws SQLException {
