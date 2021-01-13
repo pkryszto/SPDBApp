@@ -8,12 +8,20 @@ import java.util.Arrays;
 public class QueryExecuter {
 
     private Connection connection;
+    private Connection locationConnection = null;
     private int sessionNumber;
 
     public QueryExecuter() {
         String url = "jdbc:postgresql://spdb.ckvqlgxx5bxn.us-east-2.rds.amazonaws.com/SPDBPolska?user=postgres&password=Lofciamspdb1";
         try {
             connection = DriverManager.getConnection(url);
+            System.out.println("Connected to the PostgreSQL server successfully.");
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        url = "jdbc:postgresql://spdb.ckvqlgxx5bxn.us-east-2.rds.amazonaws.com/SPDBLocations?user=postgres&password=Lofciamspdb1";
+        try {
+            locationConnection = DriverManager.getConnection(url);
             System.out.println("Connected to the PostgreSQL server successfully.");
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -310,21 +318,20 @@ public class QueryExecuter {
     }
     
     public String getCityName(GeoPosition position) throws SQLException {
-        Statement stmt = connection.createStatement();
-        double startLat = position.getLatitude();
-        double starLng = position.getLongitude();
+        
+        double searchLat = position.getLatitude();
+        double searchLng = position.getLongitude();
 
-        stmt.executeUpdate(
-                ""
-        );
 
-        ResultSet rs = stmt.executeQuery("");
+        Statement stmt = locationConnection.createStatement();
+        ResultSet rs = stmt.executeQuery(
+                "SELECT name FROM cities\n"+
+                    "ORDER BY way <-> ST_SetSRID(ST_MakePoint(" + searchLng + ", " + searchLat + "), 4326)\n" +
+                    "LIMIT 1");
+
         while (rs.next()) {
             String name = rs.getString("name");
-            String point = rs.getString("point");
-            point = point.replace("POINT(", "");
-            point = point.replace(")", "");
-            String[] coordinates = point.split(" ");
+
             return name;
         }
         return null;
