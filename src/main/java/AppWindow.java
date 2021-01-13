@@ -561,18 +561,12 @@ public class AppWindow extends JFrame {
                     return;
                 }
 
-
-//                GeoPosition warsaw = new GeoPosition(51.13, 21);
-//                GeoPosition plock = new GeoPosition(52.32, 19.42);
-//                GeoPosition nowyDwor = new GeoPosition(52.26, 20.43);
-//                ArrayList<Address> addresses = new ArrayList<Address>();
-//                addresses.add(new Address(warsaw, "Warszawa"));
-//                addresses.add(new Address(plock, "Płock"));
-//                addresses.add(new Address(nowyDwor, "Nowy Dwór Mazowiecki"));
+                if (addresses == null || addresses.isEmpty())
+                    return;
 
                 ArrayList<String> possAddresses = new ArrayList<String>();
                 for (Address tmp : addresses) {
-                    possAddresses.add(tmp.getName());
+                    possAddresses.add(tmp.getKey());
                 }
                 Object[] possibilities = possAddresses.toArray();
                 Image image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
@@ -585,7 +579,7 @@ public class AppWindow extends JFrame {
                         possibilities,
                         "");
                 for (Address tmp : addresses) {
-                    if (tmp.getName().equals(chosenName)) {
+                    if (tmp.getKey().equals(chosenName)) {
                         DefaultWaypoint newStartPoint = new DefaultWaypoint(tmp.getLocation());
                         try {
                             setStartPoint(newStartPoint);
@@ -612,18 +606,12 @@ public class AppWindow extends JFrame {
                     return;
                 }
 
-
-//                GeoPosition warsaw = new GeoPosition(51.13, 21);
-//                GeoPosition plock = new GeoPosition(52.32, 19.42);
-//                GeoPosition nowyDwor = new GeoPosition(52.26, 20.43);
-//                ArrayList<Address> addresses = new ArrayList<Address>();
-//                addresses.add(new Address(warsaw, "Warszawa"));
-//                addresses.add(new Address(plock, "Płock"));
-//                addresses.add(new Address(nowyDwor, "Nowy Dwór Mazowiecki"));
+                if (addresses == null || addresses.isEmpty())
+                    return;
 
                 ArrayList<String> possAddresses = new ArrayList<String>();
                 for (Address tmp : addresses) {
-                    possAddresses.add(tmp.getName());
+                    possAddresses.add(tmp.getKey());
                 }
                 Object[] possibilities = possAddresses.toArray();
                 Image image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
@@ -636,7 +624,7 @@ public class AppWindow extends JFrame {
                         possibilities,
                         "");
                 for (Address tmp : addresses) {
-                    if (tmp.getName().equals(chosenName)) {
+                    if (tmp.getKey().equals(chosenName)) {
                         DefaultWaypoint newEndPoint = new DefaultWaypoint(tmp.getLocation());
                         try {
                             setEndPoint(newEndPoint);

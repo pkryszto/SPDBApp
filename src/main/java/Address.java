@@ -4,11 +4,12 @@ public class Address {
 
     public final GeoPosition location;
     public String name;
-
+    public String key;
 
     public Address(GeoPosition location, String name) {
         this.location = location;
         this.name = name;
+        this.key = name+", " + String.format("%.2f", location.getLatitude()) + ", " + String.format("%.2f", location.getLongitude());
 
     }
 
@@ -17,6 +18,7 @@ public class Address {
         return "Address{" +
                 "geolocation=" + location +
                 ", name='" + name + '\'' +
+                ", key='" + key + '\'' +
                 '}';
     }
 
@@ -28,4 +30,9 @@ public class Address {
         return name;
     }
 
+    public String getKey() {return key;}
+
+    public String decodeNameFromKey(String str) {
+        return str.split(", ")[0];
+    }
 }
