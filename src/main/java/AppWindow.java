@@ -16,9 +16,11 @@ import org.jxmapviewer.viewer.TileFactoryInfo;
 import org.jxmapviewer.viewer.Waypoint;
 import org.jxmapviewer.viewer.WaypointPainter;
 
+import java.awt.*;
 import java.awt.event.*;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 
 import static java.lang.Integer.parseInt;
 
@@ -45,6 +47,7 @@ public class AppWindow extends JFrame {
     private JTextArea timeText;
     private JTextArea minDistanceFromStartText;
     private JTextArea minTimeFromStartText;
+    private JTextArea nameApp;
     private JPopupMenu mapPopupMenu;
     private JMenuItem startPointItem;
     private JMenuItem endPointItem;
@@ -66,9 +69,23 @@ public class AppWindow extends JFrame {
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //setResizable(false);
-        mapViewer.setSize(400, 300);
-        mainJPanel.setSize(600, 600);
-        infoPanel.setSize(200, 600);
+        mapViewer.setSize(500, 600);
+        mainJPanel.setSize(800, 600);
+        infoPanel.setSize(300, 600);
+
+        infoPanel.setMaximumSize(new Dimension(300, -1));
+        setMinimumSize(new Dimension(400, 600));
+        this.addComponentListener(new ComponentAdapter(){
+            public void componentResized(ComponentEvent e){
+                Dimension d= getSize();
+                Dimension minD = getMinimumSize();
+                if(d.width<minD.width)
+                    d.width=minD.width;
+                if(d.height<minD.height)
+                    d.height=minD.height;
+                setSize(d);
+            }
+        });
 
         initialize();
 
