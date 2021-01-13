@@ -48,9 +48,13 @@ public class AppWindow extends JFrame {
     private JTextArea minDistanceFromStartText;
     private JTextArea minTimeFromStartText;
     private JTextArea nameApp;
+    private JTextArea minTimeToFinishLabel;
     private JPopupMenu mapPopupMenu;
     private JMenuItem startPointItem;
     private JMenuItem endPointItem;
+    private Font f1_sans;
+    private Font f2_sans_bold;
+    private Font f3_sans_small;
 
     ArrayList<Waypoint> listOfPoints;
     DefaultWaypoint startPoint;
@@ -72,6 +76,9 @@ public class AppWindow extends JFrame {
         mapViewer.setSize(500, 600);
         mainJPanel.setSize(800, 600);
         infoPanel.setSize(300, 600);
+        f1_sans  = new Font(Font.SANS_SERIF, Font.PLAIN,  12);
+        f2_sans_bold  = new Font(Font.SANS_SERIF, Font.BOLD,  12);
+        f3_sans_small  = new Font(Font.SANS_SERIF, Font.PLAIN,  9);
 
         infoPanel.setMaximumSize(new Dimension(300, -1));
         setMinimumSize(new Dimension(400, 600));
@@ -100,6 +107,7 @@ public class AppWindow extends JFrame {
         initializeCategories();
         initializeTextFields();
         initializeButton();
+        initializeFont();
     }
 
     private void initializeMapViewer() {
@@ -253,7 +261,6 @@ public class AppWindow extends JFrame {
         }
         startPoint = point;
         fromTextField.setText(getCity(startPoint.getPosition()));
-//        fromTextField.setText(startPoint.getPosition().toString());
         addPointOnMap(point.getPosition());
         displaySimpleRoute();
     }
@@ -268,8 +275,7 @@ public class AppWindow extends JFrame {
             }
         }
         endPoint = point;
-        fromTextField.setText(getCity(startPoint.getPosition()));
-//        toTextField.setText(endPoint.getPosition().toString());
+        toTextField.setText(getCity(endPoint.getPosition()));
         addPointOnMap(point.getPosition());
         displaySimpleRoute();
     }
@@ -514,5 +520,19 @@ public class AppWindow extends JFrame {
 
     private String getCity(GeoPosition geo) throws SQLException {
         return queryExecuter.getCityName(geo);
+    }
+
+    private void initializeFont() {
+        fromLabel.setFont(f1_sans);
+        toLabel.setFont(f1_sans);
+        distancePOILabel.setFont(f2_sans_bold);
+        timePOILabel.setFont(f2_sans_bold);
+        textArea1.setFont(f1_sans);
+        distanceText.setFont(f2_sans_bold);
+        timeText.setFont(f2_sans_bold);
+        minDistanceFromStartText.setFont(f1_sans);
+        minTimeFromStartText.setFont(f1_sans);
+        nameApp.setFont(f3_sans_small);
+        minTimeToFinishLabel.setFont(f1_sans);
     }
 }

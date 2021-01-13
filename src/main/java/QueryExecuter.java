@@ -316,6 +316,7 @@ public class QueryExecuter {
     }
 
 
+
     /*  Returns name of the city/town/village/hamlet that is nearest given GeoPosition */
     public String getCityName(GeoPosition position) throws SQLException {
         PreparedStatement stmt = locationConnection.prepareStatement("""
@@ -327,6 +328,7 @@ public class QueryExecuter {
         ResultSet rs = stmt.executeQuery();
         rs.next();
         return rs.getString("name");
+
 
     }
 
