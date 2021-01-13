@@ -561,8 +561,14 @@ public class AppWindow extends JFrame {
                     return;
                 }
 
-                if (addresses == null || addresses.isEmpty())
+                if (addresses == null || addresses.isEmpty()) {
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "There is not such a location.\nCheck for spelling errors.",
+                            "Location error",
+                            JOptionPane.PLAIN_MESSAGE);
                     return;
+                }
 
                 ArrayList<String> possAddresses = new ArrayList<String>();
                 for (Address tmp : addresses) {
@@ -606,8 +612,14 @@ public class AppWindow extends JFrame {
                     return;
                 }
 
-                if (addresses == null || addresses.isEmpty())
+                if (addresses == null || addresses.isEmpty()) {
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "There is not such a location.\nCheck for spelling errors.",
+                            "Location error",
+                            JOptionPane.PLAIN_MESSAGE);
                     return;
+                }
 
                 ArrayList<String> possAddresses = new ArrayList<String>();
                 for (Address tmp : addresses) {
