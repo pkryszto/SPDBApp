@@ -1,3 +1,4 @@
+import javax.lang.model.type.NullType;
 import javax.swing.*;
 import javax.swing.event.MouseInputListener;
 
@@ -18,6 +19,7 @@ import org.jxmapviewer.viewer.WaypointPainter;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
@@ -49,6 +51,8 @@ public class AppWindow extends JFrame {
     private JTextArea minTimeFromStartText;
     private JTextArea nameApp;
     private JTextArea minTimeToFinishLabel;
+    private JButton fromSearchBtn;
+    private JButton toSearchBtn;
     private JPopupMenu mapPopupMenu;
     private JMenuItem startPointItem;
     private JMenuItem endPointItem;
@@ -108,6 +112,7 @@ public class AppWindow extends JFrame {
         initializeTextFields();
         initializeButton();
         initializeFont();
+        initializeSearchButtons();
     }
 
     private void initializeMapViewer() {
@@ -209,6 +214,11 @@ public class AppWindow extends JFrame {
                     updateTimeAndDistance(routes);
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
+                    try {
+                        displaySimpleRoute();
+                    } catch (SQLException sqlException) {
+                        sqlException.printStackTrace();
+                    }
                 }
 
                 //CompoundPainter<JXMapViewer> painter = createPainters(routes);
@@ -534,5 +544,127 @@ public class AppWindow extends JFrame {
         minTimeFromStartText.setFont(f1_sans);
         nameApp.setFont(f3_sans_small);
         minTimeToFinishLabel.setFont(f1_sans);
+    }
+
+    private void initializeSearchButtons() {
+        fromSearchBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (fromTextField.getText().equals("")) return;
+
+                ArrayList<Address> addresses = null;
+
+                try {
+                    addresses = findAddresses(getFromTextField());
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                    return;
+                }
+
+
+//                GeoPosition warsaw = new GeoPosition(51.13, 21);
+//                GeoPosition plock = new GeoPosition(52.32, 19.42);
+//                GeoPosition nowyDwor = new GeoPosition(52.26, 20.43);
+//                ArrayList<Address> addresses = new ArrayList<Address>();
+//                addresses.add(new Address(warsaw, "Warszawa"));
+//                addresses.add(new Address(plock, "Płock"));
+//                addresses.add(new Address(nowyDwor, "Nowy Dwór Mazowiecki"));
+
+                ArrayList<String> possAddresses = new ArrayList<String>();
+                for (Address tmp : addresses) {
+                    possAddresses.add(tmp.getName());
+                }
+                Object[] possibilities = possAddresses.toArray();
+                Image image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+                String chosenName = (String)JOptionPane.showInputDialog(
+                        null,
+                        "Choose location:",
+                        "From location",
+                        JOptionPane.PLAIN_MESSAGE,
+                        new ImageIcon(image),
+                        possibilities,
+                        "");
+                for (Address tmp : addresses) {
+                    if (tmp.getName().equals(chosenName)) {
+                        DefaultWaypoint newStartPoint = new DefaultWaypoint(tmp.getLocation());
+                        try {
+                            setStartPoint(newStartPoint);
+                        } catch (SQLException throwables) {
+                            throwables.printStackTrace();
+                        }
+                        break;
+                    }
+                }
+            }
+        });
+
+        toSearchBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (fromTextField.getText().equals("")) return;
+
+                ArrayList<Address> addresses = null;
+
+                try {
+                    addresses = findAddresses(getToTextField());
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                    return;
+                }
+
+
+//                GeoPosition warsaw = new GeoPosition(51.13, 21);
+//                GeoPosition plock = new GeoPosition(52.32, 19.42);
+//                GeoPosition nowyDwor = new GeoPosition(52.26, 20.43);
+//                ArrayList<Address> addresses = new ArrayList<Address>();
+//                addresses.add(new Address(warsaw, "Warszawa"));
+//                addresses.add(new Address(plock, "Płock"));
+//                addresses.add(new Address(nowyDwor, "Nowy Dwór Mazowiecki"));
+
+                ArrayList<String> possAddresses = new ArrayList<String>();
+                for (Address tmp : addresses) {
+                    possAddresses.add(tmp.getName());
+                }
+                Object[] possibilities = possAddresses.toArray();
+                Image image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+                String chosenName = (String)JOptionPane.showInputDialog(
+                        null,
+                        "Choose location:",
+                        "From location",
+                        JOptionPane.PLAIN_MESSAGE,
+                        new ImageIcon(image),
+                        possibilities,
+                        "");
+                for (Address tmp : addresses) {
+                    if (tmp.getName().equals(chosenName)) {
+                        DefaultWaypoint newEndPoint = new DefaultWaypoint(tmp.getLocation());
+                        try {
+                            setEndPoint(newEndPoint);
+                        } catch (SQLException throwables) {
+                            throwables.printStackTrace();
+                        }
+                        break;
+                    }
+                }
+            }
+        });
+    }
+
+    private ArrayList<Address> findAddresses(String addressName) throws SQLException {
+        ArrayList<Address> addresses = null;
+        try {
+            addresses = queryExecuter.findAddresses(addressName);
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return addresses;
+    }
+
+    public String getFromTextField() {
+        return fromTextField.getText();
+    }
+
+    public String getToTextField() {
+        return toTextField.getText();
     }
 }

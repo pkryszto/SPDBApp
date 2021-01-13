@@ -7,31 +7,15 @@
     <properties/>
     <border type="none"/>
     <children>
-      <grid id="cebc5" binding="infoPanel" layout-manager="GridLayoutManager" row-count="13" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="cebc5" binding="infoPanel" layout-manager="GridLayoutManager" row-count="13" column-count="6" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="10" left="10" bottom="10" right="10"/>
         <constraints border-constraint="West"/>
         <properties/>
         <border type="line"/>
         <children>
-          <component id="d2878" class="javax.swing.JTextField" binding="fromTextField">
-            <constraints>
-              <grid row="0" column="2" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                <preferred-size width="150" height="-1"/>
-              </grid>
-            </constraints>
-            <properties/>
-          </component>
-          <component id="741a6" class="javax.swing.JTextField" binding="toTextField">
-            <constraints>
-              <grid row="1" column="2" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                <preferred-size width="150" height="-1"/>
-              </grid>
-            </constraints>
-            <properties/>
-          </component>
           <component id="79584" class="javax.swing.JTextField" binding="minDistanceFromStartTextField">
             <constraints>
-              <grid row="5" column="2" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+              <grid row="5" column="4" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="-1"/>
               </grid>
             </constraints>
@@ -39,7 +23,7 @@
           </component>
           <component id="9d57e" class="javax.swing.JTextField" binding="minTimeFromStartTextField">
             <constraints>
-              <grid row="6" column="2" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+              <grid row="6" column="4" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="-1"/>
               </grid>
             </constraints>
@@ -47,7 +31,7 @@
           </component>
           <component id="216d0" class="javax.swing.JTextField" binding="distancePOITextField">
             <constraints>
-              <grid row="7" column="2" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+              <grid row="7" column="4" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="-1"/>
               </grid>
             </constraints>
@@ -55,7 +39,7 @@
           </component>
           <component id="2bf94" class="javax.swing.JTextField" binding="timePOITextField">
             <constraints>
-              <grid row="8" column="2" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+              <grid row="8" column="4" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="-1"/>
               </grid>
             </constraints>
@@ -63,7 +47,7 @@
           </component>
           <component id="6f11f" class="javax.swing.JTextField" binding="minDistanceToFinishTextField">
             <constraints>
-              <grid row="9" column="2" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+              <grid row="9" column="4" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="-1"/>
               </grid>
             </constraints>
@@ -71,7 +55,7 @@
           </component>
           <component id="59310" class="javax.swing.JTextField" binding="minTimeToFinishTextField">
             <constraints>
-              <grid row="10" column="2" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+              <grid row="10" column="4" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="-1"/>
               </grid>
             </constraints>
@@ -79,47 +63,15 @@
           </component>
           <component id="efb02" class="javax.swing.JButton" binding="findRouteButton">
             <constraints>
-              <grid row="11" column="0" row-span="1" col-span="4" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="11" column="0" row-span="1" col-span="6" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value="Find route"/>
             </properties>
           </component>
-          <component id="f00ba" class="javax.swing.JTextArea" binding="distanceText">
-            <constraints>
-              <grid row="2" column="0" row-span="1" col-span="4" vsize-policy="0" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
-                <preferred-size width="150" height="50"/>
-                <maximum-size width="150" height="50"/>
-              </grid>
-            </constraints>
-            <properties>
-              <editable value="false"/>
-              <focusable value="false"/>
-              <lineWrap value="true"/>
-              <opaque value="false"/>
-              <text value="Distance:"/>
-              <wrapStyleWord value="true"/>
-            </properties>
-          </component>
-          <component id="f7c0b" class="javax.swing.JTextArea" binding="timeText">
-            <constraints>
-              <grid row="3" column="0" row-span="1" col-span="4" vsize-policy="0" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
-                <preferred-size width="150" height="50"/>
-                <maximum-size width="150" height="50"/>
-              </grid>
-            </constraints>
-            <properties>
-              <editable value="false"/>
-              <focusable value="false"/>
-              <lineWrap value="true"/>
-              <opaque value="false"/>
-              <text value="Time:"/>
-              <wrapStyleWord value="true"/>
-            </properties>
-          </component>
           <component id="88762" class="javax.swing.JComboBox" binding="choosePOIComboBox">
             <constraints>
-              <grid row="4" column="0" row-span="1" col-span="4" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="4" column="0" row-span="1" col-span="6" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <model>
@@ -129,7 +81,7 @@
           </component>
           <component id="755d" class="javax.swing.JTextArea" binding="minDistanceFromStartText">
             <constraints>
-              <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false">
+              <grid row="5" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="50"/>
               </grid>
             </constraints>
@@ -144,7 +96,7 @@
           </component>
           <component id="beb4d" class="javax.swing.JTextArea" binding="minTimeFromStartText">
             <constraints>
-              <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false">
+              <grid row="6" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="50"/>
               </grid>
             </constraints>
@@ -169,7 +121,7 @@
           </component>
           <component id="78542" class="javax.swing.JLabel" binding="toLabel">
             <constraints>
-              <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="1" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <font/>
@@ -178,7 +130,7 @@
           </component>
           <component id="dcea7" class="javax.swing.JLabel" binding="distancePOILabel">
             <constraints>
-              <grid row="7" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="7" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value="POI after (km):"/>
@@ -186,7 +138,7 @@
           </component>
           <component id="a2578" class="javax.swing.JLabel" binding="timePOILabel">
             <constraints>
-              <grid row="8" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="8" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value="POI after (min):"/>
@@ -194,7 +146,7 @@
           </component>
           <component id="63b75" class="javax.swing.JTextArea" binding="textArea1">
             <constraints>
-              <grid row="9" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false">
+              <grid row="9" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="50"/>
               </grid>
             </constraints>
@@ -209,7 +161,7 @@
           </component>
           <component id="f9b09" class="javax.swing.JTextArea" binding="minTimeToFinishLabel">
             <constraints>
-              <grid row="10" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false">
+              <grid row="10" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="50"/>
               </grid>
             </constraints>
@@ -224,7 +176,7 @@
           </component>
           <component id="7e04e" class="javax.swing.JTextArea" binding="nameApp">
             <constraints>
-              <grid row="12" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="1" fill="0" indent="0" use-parent-layout="false">
+              <grid row="12" column="1" row-span="1" col-span="3" vsize-policy="6" hsize-policy="6" anchor="1" fill="0" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="50"/>
               </grid>
             </constraints>
@@ -234,6 +186,77 @@
               <lineWrap value="true"/>
               <opaque value="false"/>
               <text value="Copyright ©  2021 SPDBApp. Wszystkie Prawa Zastrzeżone. Created by Zbigniew Kaczyński, Paweł Krysztofik i Wojciech Wolny "/>
+              <wrapStyleWord value="true"/>
+            </properties>
+          </component>
+          <component id="d2878" class="javax.swing.JTextField" binding="fromTextField">
+            <constraints>
+              <grid row="0" column="4" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                <preferred-size width="150" height="-1"/>
+              </grid>
+            </constraints>
+            <properties/>
+          </component>
+          <component id="741a6" class="javax.swing.JTextField" binding="toTextField">
+            <constraints>
+              <grid row="1" column="4" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                <preferred-size width="150" height="-1"/>
+              </grid>
+            </constraints>
+            <properties>
+              <columns value="0"/>
+              <text value=""/>
+            </properties>
+          </component>
+          <component id="8ccac" class="javax.swing.JButton" binding="toSearchBtn">
+            <constraints>
+              <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
+                <preferred-size width="10" height="10"/>
+              </grid>
+            </constraints>
+            <properties>
+              <text value="Search"/>
+            </properties>
+          </component>
+          <component id="2e127" class="javax.swing.JButton" binding="fromSearchBtn">
+            <constraints>
+              <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
+                <preferred-size width="10" height="10"/>
+              </grid>
+            </constraints>
+            <properties>
+              <text value="Search"/>
+            </properties>
+          </component>
+          <component id="f00ba" class="javax.swing.JTextArea" binding="distanceText">
+            <constraints>
+              <grid row="2" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="0" indent="0" use-parent-layout="false">
+                <preferred-size width="150" height="30"/>
+                <maximum-size width="150" height="30"/>
+              </grid>
+            </constraints>
+            <properties>
+              <editable value="false"/>
+              <focusable value="false"/>
+              <lineWrap value="true"/>
+              <opaque value="false"/>
+              <text value="Distance:"/>
+              <wrapStyleWord value="true"/>
+            </properties>
+          </component>
+          <component id="f7c0b" class="javax.swing.JTextArea" binding="timeText">
+            <constraints>
+              <grid row="3" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="0" indent="0" use-parent-layout="false">
+                <preferred-size width="150" height="30"/>
+                <maximum-size width="150" height="30"/>
+              </grid>
+            </constraints>
+            <properties>
+              <editable value="false"/>
+              <focusable value="false"/>
+              <lineWrap value="true"/>
+              <opaque value="false"/>
+              <text value="Time:"/>
               <wrapStyleWord value="true"/>
             </properties>
           </component>

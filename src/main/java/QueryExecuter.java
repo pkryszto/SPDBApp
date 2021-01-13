@@ -341,4 +341,27 @@ public class QueryExecuter {
         return null;
     }
 
+    public ArrayList<Address> findAddresses(String addressName) throws SQLException {
+        Statement stmt = connection.createStatement();
+        // TODO: Fill in executeQuery, get for example TOP 10 results
+        ResultSet rs = stmt.executeQuery("");
+        ArrayList<Address> addresses = new ArrayList<>();
+
+        while (rs.next()) {
+            String name = rs.getString("name");
+            String point = rs.getString("point");
+            point = point.replace("POINT(", "");
+            point = point.replace(")", "");
+            String[] coordinates = point.split(" ");
+
+            Address address = new Address(new GeoPosition(Double.parseDouble(coordinates[1]), Double.parseDouble(coordinates[0])), name);
+            System.out.println(address);
+            addresses.add(address);
+        }
+
+        System.out.println(addresses);
+
+        return addresses;
+    }
+
 }
