@@ -335,7 +335,7 @@ public class QueryExecuter {
     public ArrayList<Address> findAddresses(String addressName) throws SQLException {
         String capitAddressName = capitalize(addressName);
         PreparedStatement stmt = locationConnection.prepareStatement("""
-                select name, ST_AsText(way) as point from cities
+                select name, ST_AsText(way) as point, place as category from cities
                 where name like '""" +capitAddressName+ """
                 ' order by population asc
                 limit 10""");
@@ -344,13 +344,14 @@ public class QueryExecuter {
         ArrayList<Address> addresses = new ArrayList<>();
 
         while (rs.next()) {
+            String category = rs.getString("category");
             String name = rs.getString("name");
             String point = rs.getString("point");
             point = point.replace("POINT(", "");
             point = point.replace(")", "");
             String[] coordinates = point.split(" ");
 
-            Address address = new Address(new GeoPosition(Double.parseDouble(coordinates[1]), Double.parseDouble(coordinates[0])), name);
+            Address address = new Address(new GeoPosition(Double.parseDouble(coordinates[1]), Double.parseDouble(coordinates[0])), name,category);
             System.out.println(address);
             addresses.add(address);
         }
