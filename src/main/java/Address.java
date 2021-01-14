@@ -5,11 +5,13 @@ public class Address {
     public final GeoPosition location;
     public String name;
     public String key;
+    public String category;
 
-    public Address(GeoPosition location, String name) {
+    public Address(GeoPosition location, String name,String category) {
         this.location = location;
         this.name = name;
-        this.key = name+", " + String.format("%.2f", location.getLatitude()) + ", " + String.format("%.2f", location.getLongitude());
+        this.category = category;
+        this.key = name+", "+category+" " + String.format("%.2f", location.getLatitude()) + ", " + String.format("%.2f", location.getLongitude());
 
     }
 
