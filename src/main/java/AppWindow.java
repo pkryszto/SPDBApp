@@ -567,7 +567,7 @@ public class AppWindow extends JFrame {
     }
 
     private void initializeSearchButtons() {
-        // Add listeners to search buttons
+        // Add listener to 'From' search button
         fromSearchBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -575,6 +575,7 @@ public class AppWindow extends JFrame {
 
                 ArrayList<Address> addresses = null;
 
+                // try executing query for listing places named in from Text field.
                 try {
                     addresses = findAddresses(getFromTextField());
                 } catch (SQLException throwables) {
@@ -582,6 +583,7 @@ public class AppWindow extends JFrame {
                     return;
                 }
 
+                // If there is not such a location in DB, return error dialog.
                 if (addresses == null || addresses.isEmpty()) {
                     JOptionPane.showMessageDialog(
                             null,
@@ -591,12 +593,14 @@ public class AppWindow extends JFrame {
                     return;
                 }
 
+                // Prepare list of locations for dialog.
                 ArrayList<String> possAddresses = new ArrayList<String>();
                 for (Address tmp : addresses) {
                     possAddresses.add(tmp.getKey());
                 }
                 Object[] possibilities = possAddresses.toArray();
                 Image image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+                // Present dialog with possible locations.
                 String chosenName = (String)JOptionPane.showInputDialog(
                         null,
                         "Choose location:",
@@ -605,6 +609,7 @@ public class AppWindow extends JFrame {
                         new ImageIcon(image),
                         possibilities,
                         "");
+                // Resolve chosen location and set starting point.
                 for (Address tmp : addresses) {
                     if (tmp.getKey().equals(chosenName)) {
                         DefaultWaypoint newStartPoint = new DefaultWaypoint(tmp.getLocation());
@@ -619,6 +624,7 @@ public class AppWindow extends JFrame {
             }
         });
 
+        // Add listener to 'To' search button
         toSearchBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -626,6 +632,7 @@ public class AppWindow extends JFrame {
 
                 ArrayList<Address> addresses = null;
 
+                // try executing query for listing places named in from Text field.
                 try {
                     addresses = findAddresses(getToTextField());
                 } catch (SQLException throwables) {
@@ -633,6 +640,7 @@ public class AppWindow extends JFrame {
                     return;
                 }
 
+                // If there is not such a location in DB, return error dialog.
                 if (addresses == null || addresses.isEmpty()) {
                     JOptionPane.showMessageDialog(
                             null,
@@ -642,12 +650,14 @@ public class AppWindow extends JFrame {
                     return;
                 }
 
+                // Prepare list of locations for dialog.
                 ArrayList<String> possAddresses = new ArrayList<String>();
                 for (Address tmp : addresses) {
                     possAddresses.add(tmp.getKey());
                 }
                 Object[] possibilities = possAddresses.toArray();
                 Image image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+                // Present dialog with possible locations.
                 String chosenName = (String)JOptionPane.showInputDialog(
                         null,
                         "Choose location:",
@@ -656,6 +666,7 @@ public class AppWindow extends JFrame {
                         new ImageIcon(image),
                         possibilities,
                         "");
+                // Resolve chosen location and set finishing point.
                 for (Address tmp : addresses) {
                     if (tmp.getKey().equals(chosenName)) {
                         DefaultWaypoint newEndPoint = new DefaultWaypoint(tmp.getLocation());
@@ -672,6 +683,7 @@ public class AppWindow extends JFrame {
     }
 
     private ArrayList<Address> findAddresses(String addressName) throws SQLException {
+        // run queryExecutor function to resolve locations with given name.
         ArrayList<Address> addresses = null;
         try {
             addresses = queryExecuter.findAddresses(addressName);
