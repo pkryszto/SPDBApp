@@ -72,11 +72,13 @@ public class AppWindow extends JFrame {
     private QueryExecuter queryExecuter;
 
     public AppWindow(QueryExecuter queryExecuter) {
+
+        // Setup of panels in JFrame
         add(mainJPanel);
         setTitle("SPDB Application");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        //setResizable(false);
+
         mapViewer.setSize(500, 600);
         mainJPanel.setSize(800, 600);
         infoPanel.setSize(300, 600);
@@ -98,6 +100,7 @@ public class AppWindow extends JFrame {
             }
         });
 
+        // Initialize components in JFrame
         initialize();
 
         listOfPoints = new ArrayList<Waypoint>();
@@ -116,6 +119,7 @@ public class AppWindow extends JFrame {
     }
 
     private void initializeMapViewer() {
+        // Add listeners to map
         MouseInputListener mia = new PanMouseInputListener(mapViewer);
         mapViewer.addMouseListener(mia);
         mapViewer.addMouseMotionListener(mia);
@@ -127,6 +131,8 @@ public class AppWindow extends JFrame {
         TileFactoryInfo info = new OSMTileFactoryInfo();
         DefaultTileFactory tileFactory = new DefaultTileFactory(info);
         mapViewer.setTileFactory(tileFactory);
+
+        // Create points used to set the set the focus in map
 
         GeoPosition warsaw = new GeoPosition(51.13, 21);
         GeoPosition plock = new GeoPosition(52.32, 19.42);
@@ -140,12 +146,15 @@ public class AppWindow extends JFrame {
     }
 
     private void initializePopupMenu() {
+        // Set up items in popup menu and add listener
+
         mapPopupMenu = new JPopupMenu();
         startPointItem = new JMenuItem("Set as starting point");
         endPointItem = new JMenuItem("Set as end point");
         mapPopupMenu.add(startPointItem);
         mapPopupMenu.add(endPointItem);
 
+        // Display popup menu
         mapViewer.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -156,6 +165,7 @@ public class AppWindow extends JFrame {
             }
         });
 
+        // Assign start point and display it on the map
         startPointItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -168,6 +178,7 @@ public class AppWindow extends JFrame {
             }
         });
 
+        // Assign end point and display it on the map
         endPointItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -182,6 +193,7 @@ public class AppWindow extends JFrame {
     }
 
     private void initializeTextFields() {
+        //Prevent textfields from typing incorrect signs
         allowOnlyNumbers(minDistanceFromStartTextField);
         allowOnlyNumbers(minTimeFromStartTextField);
         allowOnlyNumbers(minDistanceToFinishTextField);
@@ -191,6 +203,8 @@ public class AppWindow extends JFrame {
     }
 
     private void initializeCategories() {
+        // Get POI categories from database and add them to ComboBox
+
         ArrayList<String> categories = queryExecuter.getPOICategories();
 
         for (String cat : categories) {
@@ -199,36 +213,41 @@ public class AppWindow extends JFrame {
     }
 
     private void initializeButton() {
+        // Add listener to button
         findRouteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                //Return if user didn't choose start and end points both
                 if (startPoint == null || endPoint == null) return;
 
                 ArrayList<Poi> pois = null;
                 ArrayList<Route> routes = null;
 
                 try {
+                    // Find POIs for given parameters
                     pois = findPOIs();
+                    // Create route including founded POIs
                     routes = findRouteForPOIs(pois);
+                    // Display route on map
                     drawRouteAndPois(pois, routes);
+                    // Display time and distance of new route
                     updateTimeAndDistance(routes);
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
                     try {
+                        //If route with correct POIs doesn't exist display simple route
                         displaySimpleRoute();
                     } catch (SQLException sqlException) {
+                        // Display error
                         sqlException.printStackTrace();
                     }
                 }
-
-                //CompoundPainter<JXMapViewer> painter = createPainters(routes);
-
-                //mapViewer.setOverlayPainter(painter);
             }
         });
     }
 
     private void allowOnlyNumbers(JTextField t) {
+        // Do not let the user type incorrect signs
         t.addKeyListener(new KeyAdapter() {
             public void keyTyped(KeyEvent e) {
                 char c = e.getKeyChar();
@@ -261,7 +280,9 @@ public class AppWindow extends JFrame {
     }
 
     private void setStartPoint(DefaultWaypoint point) throws SQLException {
+
         if (startPoint != null) {
+            //Remove old start point from list of points
             for (int i = 0; i < listOfPoints.size(); i++) {
                 if (listOfPoints.get(i).getPosition() == startPoint.getPosition()) {
                     listOfPoints.remove(i);
@@ -270,13 +291,20 @@ public class AppWindow extends JFrame {
             }
         }
         startPoint = point;
+
+        // Find the nearest town near the point and type it into fromTextField
         fromTextField.setText(getCity(startPoint.getPosition()));
+
+        // Display point on map
         addPointOnMap(point.getPosition());
+
+        // Display route between new start point and end point
         displaySimpleRoute();
     }
 
     private void setEndPoint(DefaultWaypoint point) throws SQLException {
         if (endPoint != null) {
+            //Remove old end point from list of points
             for (int i = 0; i < listOfPoints.size(); i++) {
                 if (listOfPoints.get(i).getPosition() == endPoint.getPosition()) {
                     listOfPoints.remove(i);
@@ -285,21 +313,27 @@ public class AppWindow extends JFrame {
             }
         }
         endPoint = point;
+
+        // Find the nearest town near the point and type it into toTextField
         toTextField.setText(getCity(endPoint.getPosition()));
         addPointOnMap(point.getPosition());
+        // Display route between start point and new end point
         displaySimpleRoute();
     }
 
     private void drawRoute(ArrayList<GeoPosition> points) {
+        //Create painter for route
         RoutePainter routePainter = new RoutePainter(points, 0);
         List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
         painters.add(routePainter);
 
+        //Create painter for list of points
         WaypointPainter<Waypoint> waypointPainter = new WaypointPainter<Waypoint>();
         HashSet<Waypoint> hList = new HashSet<Waypoint>(listOfPoints);
         waypointPainter.setWaypoints(hList);
         painters.add(waypointPainter);
 
+        //Draw route and display points on map
         CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>(painters);
         mapViewer.setOverlayPainter(painter);
     }
@@ -307,21 +341,25 @@ public class AppWindow extends JFrame {
     private void drawRouteInParts(ArrayList<ArrayList<GeoPosition>> points) {
         List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
 
+        //Create painter for every part of route
         for (ArrayList<GeoPosition> route : points) {
             RoutePainter routePainter = new RoutePainter(route,0);
             painters.add(routePainter);
         }
 
+        //Create painter for list of points
         WaypointPainter<Waypoint> waypointPainter = new WaypointPainter<Waypoint>();
         HashSet<Waypoint> hList = new HashSet<Waypoint>(listOfPoints);
         waypointPainter.setWaypoints(hList);
         painters.add(waypointPainter);
 
+        //Draw route and display points on map
         CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>(painters);
         mapViewer.setOverlayPainter(painter);
     }
 
     private void displaySimpleRoute() throws SQLException {
+        //Return if user didn't choose start and end points both
         if (startPoint == null || endPoint == null) return;
         ArrayList<GeoPosition> points = new ArrayList<GeoPosition>();
         points.add(startPoint.getPosition());
@@ -329,10 +367,15 @@ public class AppWindow extends JFrame {
 
         //DO TESTÓW 1337
         queryExecuter.setSessionNumber(1337);
+        // Draw a number for session
         //queryExecuter.setSessionNumber((int) (Math.random() * 99999));
+
+        // Find route for selected points
         Route route = findRoute(points);
+        // Display route on map
         drawRouteInParts(route.route);
 
+        // Display time and distance of route
         updateDistanceText((int) route.distance);
         updateTimeText(route.time);
     }
@@ -347,6 +390,7 @@ public class AppWindow extends JFrame {
     }
 
     private void updateTimeText(int mins) {
+        // Convert minutes to HH:MM format
         timeText.setText("Time: " + convertMinutesToTime(mins));
         timeOfRoute = mins;
     }
@@ -386,23 +430,8 @@ public class AppWindow extends JFrame {
         return choosePOIComboBox.getSelectedItem().toString();
     }
 
-
-    private int computePOINumber() {
-        int distanceValue = getPOIDistance();
-        int timeValue = getPOITime();
-
-        int distanceNumber = distanceOfRoute / distanceValue;
-        if (distanceOfRoute % distanceValue == 0) distanceNumber--;
-        int timeNumber = timeOfRoute / timeValue;
-        if (timeOfRoute % timeValue == 0) timeNumber--;
-
-        if (distanceValue == -1) return timeNumber;
-        else if (timeValue == -1) return distanceNumber;
-
-        return distanceNumber < timeNumber ? distanceNumber : timeNumber;
-    }
-
     private ArrayList<Poi> findPOIs() throws SQLException {
+        // Get parameters typed by user
         int minDistanceFromStart = getMinDistanceFromStart();
         int minTimeFromStart = getMinTimeFromStart();
         int distancePOI = getPOIDistance();
@@ -411,6 +440,7 @@ public class AppWindow extends JFrame {
         int minTime = getMinTime();
         String POICategory = getPOICategory();
 
+        // Call queryExecuter to find POIs
         ArrayList<Poi> pois = queryExecuter.findPOIs(minDistance, minTime, distancePOI, minDistanceFromStart, timePOI, minTimeFromStart, POICategory);
 
         return pois;
@@ -418,14 +448,15 @@ public class AppWindow extends JFrame {
 
     private ArrayList<Route> findRouteForPOIs(ArrayList<Poi> pois) throws SQLException
     {
+        // Create list of POI geoposition
         ArrayList<GeoPosition> points = new ArrayList<GeoPosition>();
-
         points.add(startPoint.getPosition());
         for (Poi poi : pois){
             points.add(poi.location);
         }
         points.add(endPoint.getPosition());
 
+        // Create list of routes between POIs
         ArrayList<Route> finalRoute = new ArrayList<>();
 
         for (int i = 0; i< points.size()-1;i++){
@@ -440,11 +471,11 @@ public class AppWindow extends JFrame {
 
     private CompoundPainter<JXMapViewer> createPaintersFromList(ArrayList<Route> routes)
     {
-        System.out.println(routes.size() +" SIZE");
         List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
         List<Painter<JXMapViewer>> temp =  new ArrayList<Painter<JXMapViewer>>();
         int i = 0;
 
+        // Create painters for every part of every path
         for(Route route : routes)
         {
             for (ArrayList<GeoPosition> path : route.route)
@@ -452,6 +483,7 @@ public class AppWindow extends JFrame {
                 RoutePainter routePainter = new RoutePainter(path, i);
                 painters.add(routePainter);
             }
+            // Change color of next path
             i = (i+1) % 8;
         }
 
@@ -459,28 +491,17 @@ public class AppWindow extends JFrame {
         return painter;
     }
 
-    private List<Painter<JXMapViewer>> createPainters(ArrayList<ArrayList<GeoPosition>> routes) {
-        List<Painter<JXMapViewer>> painters = new ArrayList<Painter<JXMapViewer>>();
-        for (ArrayList<GeoPosition> list : routes) addPainter(painters, list);
-        return painters;
-    }
-
-    private void addPainter(List<Painter<JXMapViewer>> painters, ArrayList<GeoPosition> points) {
-        ArrayList<GeoPosition> route = new ArrayList<GeoPosition>();
-        RoutePainter routePainter = new RoutePainter(route, 0);
-        painters.add(routePainter);
-    }
-
     private void addPOIPainter(CompoundPainter<JXMapViewer> painters,List<Poi> pois)
     {
+        // Create list of Waypoints for POIs
         HashSet<Waypoint> hList = new HashSet<Waypoint>();
-
         for(Poi poi : pois)
         {
             DefaultWaypoint toAdd = new DefaultWaypoint(poi.location);
             hList.add(toAdd);
         }
 
+        // Create painter and add it to list of painters
         WaypointPainter<Waypoint> waypointPainter = new WaypointPainter<Waypoint>();
         waypointPainter.setWaypoints(hList);
         painters.addPainter(waypointPainter);
@@ -495,16 +516,19 @@ public class AppWindow extends JFrame {
 
     private void drawRouteAndPois(ArrayList<Poi> pois, ArrayList<Route> route)
     {
+        // Create painters for route
         CompoundPainter painter = createPaintersFromList(route);
 
+        // Create painter for POIs
         addPOIPainter(painter, pois);
 
+        //Create painter for start and end point
         WaypointPainter<Waypoint> waypointPainter = new WaypointPainter<Waypoint>();
         HashSet<Waypoint> hList = new HashSet<Waypoint>(listOfPoints);
         waypointPainter.setWaypoints(hList);
-
         painter.addPainter(waypointPainter);
 
+        // Display route and points on map
         mapViewer.setOverlayPainter(painter);
     }
 
@@ -523,12 +547,8 @@ public class AppWindow extends JFrame {
         updateTimeText(time);
     }
 
-    private void showError()
-    {
-        JOptionPane.showMessageDialog(mainJPanel, "Route doesn't exist", "Error", JOptionPane.PLAIN_MESSAGE);
-    }
-
     private String getCity(GeoPosition geo) throws SQLException {
+        // Find city which is nearest to selected point
         return queryExecuter.getCityName(geo);
     }
 
@@ -547,6 +567,7 @@ public class AppWindow extends JFrame {
     }
 
     private void initializeSearchButtons() {
+        // Add listeners to search buttons
         fromSearchBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
