@@ -11,6 +11,7 @@ public class QueryExecuter {
     private int sessionNumber;
 
     public QueryExecuter() {
+        // Setup for spatial database connection
         String url = "jdbc:postgresql://spdb.ckvqlgxx5bxn.us-east-2.rds.amazonaws.com/SPDBPolska?user=postgres&password=Lofciamspdb1";
         try {
             connection = DriverManager.getConnection(url);
@@ -18,6 +19,7 @@ public class QueryExecuter {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+        // Setup for databse with names of locations connection
         url = "jdbc:postgresql://spdb.ckvqlgxx5bxn.us-east-2.rds.amazonaws.com/SPDBLocations?user=postgres&password=Lofciamspdb1";
         try {
             locationConnection = DriverManager.getConnection(url);
@@ -32,6 +34,7 @@ public class QueryExecuter {
     }
 
     public Route findRoute(ArrayList<GeoPosition> points) throws SQLException {
+        // Find route between two locations - starting location and destination. Does not include POI.
         ArrayList<ArrayList<GeoPosition>> route = new ArrayList<>();
         double distance = 0;
         double time = 0;
@@ -41,6 +44,7 @@ public class QueryExecuter {
         double endLat = points.get(1).getLatitude();
         double endLng = points.get(1).getLongitude();
 
+        //Set distance factor
         double separation = calculateDistance(points.get(0), points.get(1));
         System.out.println(separation);
         int distanceFactor;
@@ -117,6 +121,7 @@ public class QueryExecuter {
     }
 
     public Route findFinalRoute(ArrayList<GeoPosition> points) throws SQLException {
+        // Find route with collected all points on the way to the destination. Includes POI.
         ArrayList<ArrayList<GeoPosition>> route = new ArrayList<>();
         double distance = 0;
         double time = 0;
@@ -175,6 +180,7 @@ public class QueryExecuter {
 
 
     public ArrayList<Poi> findPOIs(int lastDistance, int lastTime, int distancePOI, int minDistance, int timePOI, int minTime, String POICategory) throws SQLException {
+        // Find list of matching POI
         Statement stmt = connection.createStatement();
         ResultSet rs = stmt.executeQuery("SELECT km as distance, kmh as speed, ST_AsText(geom_way) as waypoint  FROM WAYS_" + sessionNumber + "2;");
         double distance = 0;
@@ -186,10 +192,12 @@ public class QueryExecuter {
         ArrayList<Poi> pois = new ArrayList<>();
         int createdPoints = 0;
 
+        // Save found POI in list depending on number of added POI and distance or time to the POI.
         while (rs.next()) {
             distance += rs.getDouble("distance");
             time += rs.getDouble("distance") / rs.getDouble("speed");
             System.out.println(distance + " " + time);
+            // The first POI should be further away than given distance and should be after given time.
             if (createdPoints == 0 && distance > minDistance && time > (((double) (minTime)) / 60)) {
                 String line = rs.getString("waypoint");
                 line = line.replace("LINESTRING(", "");
@@ -206,9 +214,11 @@ public class QueryExecuter {
 
 
             } else if (createdPoints > 0) {
+                // If this is further POI
                 distanceFromLastPoi += rs.getDouble("distance");
                 timeSinceLastPoi += rs.getDouble("distance") / rs.getDouble("speed");
 
+                // Add POI if distance from last POI is longer than given distance and time from last POI is longer than given time
                 if (distanceFromLastPoi > distancePOI && timeSinceLastPoi > (((double) (timePOI)) / 60)) {
                     String line = rs.getString("waypoint");
                     line = line.replace("LINESTRING(", "");
@@ -242,6 +252,7 @@ public class QueryExecuter {
     }
 
     private Poi createPoi(double searchLng, double searchLat, String POICategory) throws SQLException {
+        // Get POI information from db based on geolocation and category.
         Statement stmt = connection.createStatement();
         ResultSet rs = stmt.executeQuery("SELECT name, way,ST_AsText(way) as point FROM pois where amenity='" + POICategory + "'\n" +
                 "\t\tORDER BY way <-> ST_SetSRID(ST_MakePoint(" + searchLng + ", " + searchLat + "), 4326)\n" +
@@ -286,6 +297,7 @@ public class QueryExecuter {
     }
 
     private static double calculateDistance(GeoPosition g1, GeoPosition g2) {
+        // Calculate direct distance between two geolocations.
 
         double lat1 = g1.getLatitude();
         double lon1 = g1.getLongitude();
@@ -306,6 +318,7 @@ public class QueryExecuter {
     }
 
     private void insertRoutesNearPoint(GeoPosition position) throws SQLException {
+        // Add geolocation to statement
         PreparedStatement stmt = connection.prepareStatement("INSERT INTO WAYS_"+sessionNumber+"2\n" +
                 "                        SELECT * from routing2\n" +
                 "                        ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(?,?), 4326)\n" +
@@ -316,9 +329,8 @@ public class QueryExecuter {
     }
 
 
-
-    /*  Returns name of the city/town/village/hamlet that is nearest given GeoPosition */
     public String getCityName(GeoPosition position) throws SQLException {
+        // Returns name of the city/town/village/hamlet that is nearest given GeoPosition.
         PreparedStatement stmt = locationConnection.prepareStatement("""
                 SELECT name FROM cities
                 ORDER BY way <-> ST_SetSRID(ST_MakePoint(?,?), 4326)
@@ -333,7 +345,9 @@ public class QueryExecuter {
     }
 
     public ArrayList<Address> findAddresses(String addressName) throws SQLException {
+        // Set given string to title case. All locations in db are in title case.
         String capitAddressName = capitalize(addressName);
+        // Get 10 matching locations
         PreparedStatement stmt = locationConnection.prepareStatement("""
                 select name, ST_AsText(way) as point, place as category from cities
                 where name like '""" +capitAddressName+ """
@@ -341,8 +355,10 @@ public class QueryExecuter {
                 limit 10""");
 
         ResultSet rs = stmt.executeQuery();
+        // Create a list of addresses
         ArrayList<Address> addresses = new ArrayList<>();
 
+        // Fill the list with addresses
         while (rs.next()) {
             String category = rs.getString("category");
             String name = rs.getString("name");
@@ -351,6 +367,7 @@ public class QueryExecuter {
             point = point.replace(")", "");
             String[] coordinates = point.split(" ");
 
+            // Add an address to the list
             Address address = new Address(new GeoPosition(Double.parseDouble(coordinates[1]), Double.parseDouble(coordinates[0])), name,category);
             System.out.println(address);
             addresses.add(address);
@@ -362,6 +379,7 @@ public class QueryExecuter {
     }
 
     private static String capitalize(String str) {
+        // function to change given String format to title case
         if (str == null || str.isEmpty())
             return "";
         if (str.length() == 1)
