@@ -5,14 +5,23 @@ Aplikacja służy do wyznaczania trasy pomiędzy dwoma zadanymi punktami na mapi
 ## 2. Baza danych
 Jako źródło danych przestrzennych wykorzystano OpenStreetMap. Do ich przechowywania użyto bazę danych PostgreSQL z rozszerzeniami postgis i pgrouting, hostowaną na serwerze RDS Amazon Web Services. Do importu trasowalnej sieci dróg użyto narzędzie [osm2po](https://osm2po.de/), zaś do importu konkretnych punktów zainteresowania (poi) dane pobrane z API [overpass turbo](https://overpass-turbo.eu/), obrobione narzędziem [osmconvert](https://wiki.openstreetmap.org/wiki/Osmconvert) i wgrane z użyciem [osm2pgsql](https://wiki.openstreetmap.org/wiki/Osm2pgsql).
 
-## 3. Architektura aplikacji
+## 3. Wybór parametrów przez użytkownika
+
+Punkt początkowy i końcowy mogą zostać wybrane przez użytkownika poprzez zaznaczenie ich na mapie, bądź wpisanie nazwy miejscowości w odpowiednim oknie. W przypadku, gdy w Polsce występuje więcej niż jedna miejscowość o zadanej nazwie, użytkownik ma możliwość wyboru odpowiedniego miejsca z wyświetlonej listy. Kategoria odwiedzanych obiektów POI jest możliwa do zaznaczenia na liście, natomiast pozostałe parametry określające odległości miedzy POI użytkownik wpisuje z wskazanych do tego miejscach.
+
+## 4. Architektura aplikacji
 
 Aplikacja została napisana zgodnie z wzorcem architektonicznym MVC. Część widoku odpowiedzialna za przyjmowanie od użytkownika parametrów została zrealizowana za pomocą biblioteki Swing, natomiast do wyświetalania mapy, trasy i POI użyto biblioteki JXMapViewer2.
 
-Aplikacja stworzona została w dwuwartwowej archtekturze klient-serwer. Po stronie klienta zrealizowano pobieranie danych od użytkownika oraz wyświetlanie wyników otrzymanych z serwera. Serwer, w postaci bazy danych odpowiada za odnajdywanie trasy i POI.
+Aplikacja stworzona została w dwuwarstwowej archtekturze klient-serwer. Po stronie klienta zrealizowano pobieranie danych od użytkownika oraz wyświetlanie wyników otrzymanych z serwera. Serwer, w postaci bazy danych odpowiada za odnajdywanie trasy i POI.
 
+W programie zostały wyszczególnione następujące klasy:
+-AppWindow- klasa odpowiedzialna za przyjmowanie i wyświetlanie danych. Posiada kontroler, za pomocą którego wywołuje funkcje obiektu klasy QueryExecuter.
+-QueryExecuter- klasa odpowiedzialna za komunikację z bazą danych. Na podstawie parametrów otrzymanych od klasy AppWindow generuje zapytania, które wykonuje na bazie. Otrzymane wyniki przekazuje do AppWindow
+-Route- klasa przechowująca listę punktów składających się na ścieżkę oraz informacje o czasie i długości podróży
+-POI- klasa przechowująca nazwę oraz współrzędne POI.
 
-## 4. Algorytm wyszukiwania trasy
+## 5. Algorytm wyszukiwania trasy
 
 Przy uruchomieniau aplikacji zostaje utworzona tymczasowa tabela przechowująca drogi. Dla przyspieszenia obliczeń przyjęte zostało założenie, że po Polsce najszybciej przemieszcza się drogami krajowymi i autostradami, a mniejsze drogi służą jedynie do dojechania do większych ulic. Do tabeli wstawiane sąautostrady i drogi krajowe znadujące się najbliżej odcinka pomiędzy punktem początkowym i końcowym oraz drogi każdego rodzaju znajdujące się w pobliżu punku począkowego i końcowego. Dla tak wyznaczonego zbiory wywoływany zostaje algorytm A* odnajdujący najkrótszą ścieżkę pomiędzy punktem początkowym i końcowym. W celu skrócenia czasu zapytania na tabeli został założony indeks przestrzenny (!!!!Zbyszek potwierdź!!!!). Zastosowanie wymienionych optymalizacji pozwoliło skrócić czas zapytania z trzech minut do kilkunastu sekund.
 
