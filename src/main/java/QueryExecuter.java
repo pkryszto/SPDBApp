@@ -61,13 +61,13 @@ public class QueryExecuter {
                         "LIMIT 15000)\n" +
                         "UNION (select * from fast_ways\n" +
                         "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + (starLng + endLng) / 2 + "," + (startLat + endLat) / 2 + "), 4326)\n" +
-                        "LIMIT " + 5000 * distanceFactor + ")\n" +
+                        "LIMIT " + 7000 * distanceFactor + ")\n" +
                         "UNION (select * from fast_ways\n" +
                         "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + (starLng + (starLng + endLng) / 2) / 2 + "," + (startLat + (startLat + endLat) / 2) / 2 + "), 4326)\n" +
-                        "LIMIT " + 5000 * distanceFactor + ")\n" +
+                        "LIMIT " + 7000 * distanceFactor + ")\n" +
                         "UNION (select * from fast_ways\n" +
                         "ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(" + ((starLng + endLng) / 2 + endLng) / 2 + "," + ((startLat + endLat) / 2 + endLat) / 2 + "), 4326)\n" +
-                        "LIMIT " + 5000 * distanceFactor + ")"
+                        "LIMIT " + 7000 * distanceFactor + ")"
         );
 
         stmt.executeUpdate(
